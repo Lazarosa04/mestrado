@@ -1,0 +1,116 @@
+%% ex 7
+
+% script to run Simulator3 100 times with a stopping criterion of P = 10000
+% at each run and to compute the estimated values and the 90% confidence intervals
+% of all performance parameters when lambda = 1800 pps, C = 10 Mbps, f = 1.000.000 Bytes 
+% (~1 MByte) and n = 20.
+
+N = 100;
+
+lambda = 1800;
+C = 10;
+P = 1e4;
+n = 20;
+
+alfa= 0.1; %90% confidence interval%
+
+per_pl= zeros(1,N);
+per_apd= zeros(1,N);
+per_mpd= zeros(1,N);
+per_tt= zeros(1,N);
+
+per_pl_v  = zeros(1,N);
+per_apd_v = zeros(1,N);
+per_mpd_v = zeros(1,N);
+
+%% b)
+
+f = 1e6;
+for index = 1:N
+    index
+    [per_pl(index), per_pl_v(index), per_apd(index), per_apd_v(index), per_mpd(index), per_mpd_v(index), per_tt(index)] = Simulator3(lambda, C, f, P, n);
+end
+
+%% c)
+
+f = 1e4;
+for index = 1:N
+    index
+    [per_pl(index), per_pl_v(index), per_apd(index), per_apd_v(index), per_mpd(index), per_mpd_v(index), per_tt(index)] = Simulator3(lambda, C, f, P, n);
+end
+
+%  f passa de 1 MB para 10 KB -> tem a ver com espaço da fila (fila fica mais pequena)
+% Quando o canal está ocupado, os novos pacotes q chegam são descartados,
+% o que causa o aumento da taxa de perda de pacotes.
+% Por outro lado, os pacotes que são transmitidos tem um menor tempo de 
+% espera na fila, o q implica um menor atraso médio e máximo.
+% Finalmente, o throughput total diminui ligeiramente, pois uma fração maior 
+% dos pacotes não é transmitida com sucesso.
+
+
+%% d)
+
+f = 2e3;
+for index = 1:N
+    index
+    [per_pl(index), per_pl_v(index), per_apd(index), per_apd_v(index), per_mpd(index), per_mpd_v(index), per_tt(index)] = Simulator3(lambda, C, f, P, n);
+end
+
+% 
+
+%% e)
+
+f = 1e6;
+for index = 1:N
+    index
+    [per_pl(index), per_pl_v(index), per_apd(index), per_apd_v(index), per_mpd(index), per_mpd_v(index), per_tt(index)] = Simulator4(lambda, C, f, P, n);
+end
+
+% neste caso, como Voip tem maior prioridade q os outros pacotes, os tempos
+% de delay baixam, pq em vez de enviar os pacotes por FIFO, eles procuram
+% 1o os voip o q evita que estejam muito tempo na fila de espera
+
+%% f)
+
+f = 1e4;
+for index = 1:N
+    index
+    [per_pl(index), per_pl_v(index), per_apd(index), per_apd_v(index), per_mpd(index), per_mpd_v(index), per_tt(index)] = Simulator4(lambda, C, f, P, n);
+end
+
+% em relação ao 7c) verifica se que também houve um aumento na taxa de
+% pacotes perdidos (baixou a f -> menos espaço na fila)
+% a unica diferença foi mesmo q aconteceu na alinea anterior, baixou o
+% tempo de delay dos voip
+
+%% g)
+
+f = 2e3;
+for index = 1:N
+    index
+    [per_pl(index), per_pl_v(index), per_apd(index), per_apd_v(index), per_mpd(index), per_mpd_v(index), per_tt(index)] = Simulator4(lambda, C, f, P, n);
+end
+
+%%
+
+media = mean(per_pl);
+term = norminv(1-alfa/2)*sqrt(var(per_pl)/N);
+fprintf('PacketLoss             = %.2e +- %.2e\n',media,term);
+media = mean(per_pl_v);
+term = norminv(1-alfa/2)*sqrt(var(per_pl_v)/N);
+fprintf('PacketLoss_v           = %.2e +- %.2e\n',media,term);
+media = mean(per_apd);
+term = norminv(1-alfa/2)*sqrt(var(per_apd)/N);
+fprintf('Av. Packet Delay   (ms) = %.2e +- %.2e\n',media,term);
+media = mean(per_apd_v);
+term = norminv(1-alfa/2)*sqrt(var(per_apd_v)/N);
+fprintf('Av. Packet Delay_v (ms) = %.2e +- %.2e\n',media,term);
+media = mean(per_mpd);
+term = norminv(1-alfa/2)*sqrt(var(per_mpd)/N);
+fprintf('Max. Packet Delay  (ms) = %.2e +- %.2e\n',media,term);
+media = mean(per_mpd_v);
+term = norminv(1-alfa/2)*sqrt(var(per_mpd_v)/N);
+fprintf('Max. Packet Delay_v(ms) = %.2e +- %.2e\n',media,term);
+media = mean(per_tt);
+term = norminv(1-alfa/2)*sqrt(var(per_tt)/N);
+fprintf('Throughput (Mbps)      = %.2e +- %.2e\n',media,term);

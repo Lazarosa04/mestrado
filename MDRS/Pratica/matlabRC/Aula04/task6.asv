@@ -1,0 +1,63 @@
+%% ex 6
+
+% Develop a MATLAB script to run Simulator2 100 times with a stopping criterion of P =
+% 10000 at each run and to compute the estimated values and the 90% confidence intervals
+% of all performance parameters when lambda = 1800 pps, C = 10 Mbps, f = 1.000.000 Bytes and
+% b = 10-6.
+
+N = 100;
+alfa = 0.9;
+
+lambda = 1800;
+C = 10e6;
+
+P = 1e5;
+b = 10e-6;
+
+per_pl= zeros(1,N);
+per_apd= zeros(1,N);
+per_mpd= zeros(1,N);
+per_tt= zeros(1,N);
+
+%% b)
+
+f = 1e6;
+for index = 1:N
+    [per_pl(index), per_apd(index), per_mpd(index), per_tt(index)] = Simulator2(lambda, C, f, P, b);
+end
+%% c)
+
+f = 1e4;
+for index = 1:N
+    [per_pl(index), per_apd(index), per_mpd(index), per_tt(index)] = Simulator2(lambda, C, f, P, b);
+end
+
+%% d)
+
+f = 2e3;
+for index = 1:N
+    [per_pl(index), per_apd(index), per_mpd(index), per_tt(index)] = Simulator2(lambda, C, f, P, b);
+end
+
+%%
+media = mean(per_pl);
+term = norminv(1-alfa/2)*sqrt(var(per_pl)/N);
+fprintf('PacketLoss             = %.2e +- %.2e\n',media,term);
+media = mean(per_apd);
+term = norminv(1-alfa/2)*sqrt(var(per_apd)/N);
+fprintf('Av. Packet Delay (ms)  = %.2e +- %.2e\n',media,term);
+media = mean(per_mpd);
+term = norminv(1-alfa/2)*sqrt(var(per_mpd)/N);
+fprintf('Max. Packet Delay (ms) = %.2e +- %.2e\n',media,term);
+media = mean(per_tt);
+term = norminv(1-alfa/2)*sqrt(var(per_tt)/N);
+fprintf('Throughput (Mbps)      = %.2e +- %.2e\n',media,term);
+
+%R: 5 b) -> packet loss = 0
+% 
+% O 6b) já tem uma packet loss significativa, pq neste caso é verificado 
+% caso seja enviado ele pode conter erros na transmissão o que conta como 
+% packet loss
+
+% 5 d) e 5 e) -> perdas só por overflow -> valor de frequência muito baixo
+% 6 c) e 6 d) ->frequência é menor -> maior delay mas perde menos
