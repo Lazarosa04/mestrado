@@ -78,3 +78,7 @@ For three tasks, the U_lub bound is approximately 0.78 (78%), as above.
 Since the utilization (0.93) is above the bound (0.78), the utilization-bound test cannot guarantee schedulability, and this task set is not schedulable.
 
 ![Gantt chart 3](RM_schedule_ex_3.png)
+
+# Harmonic Periods
+
+No caso de um conjunto de tarefas com períodos harmônicos, isto é, quando os períodos maiores são múltiplos inteiros dos peíodos menores, desde que a soma das utilizações seja menor ou igual a 1, o conjunto de tarefas é garantidamente escalonável. 
