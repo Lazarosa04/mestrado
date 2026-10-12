@@ -1,5 +1,13 @@
 const std = @import("std");
 
+fn monotonicTimeNs() error{ClockGetTimeFailed}!u64 {
+  var ts: std.os.linux.timespec = undefined;
+  if (std.os.linux.clock_gettime(.MONOTONIC, &ts) != 0) {
+    return error.ClockGetTimeFailed;
+  }
+  return @as(u64, @intCast(ts.sec)) * std.time.ns_per_s + @as(u64, @intCast(ts.nsec));
+}
+
 pub fn main() !void {
   const n_samples: i32 = 2049;
   const c_re_min: f64 = -2.05;
@@ -8,7 +16,7 @@ pub fn main() !void {
   const c_im_max: f64 =  1.30;
   var count: i32 = 0;
 
-  var timer = try std.time.Timer.start();
+  const start_ns = try monotonicTimeNs();
 
   var re_idx: i32 = 0;
   while (re_idx < n_samples) : (re_idx += 1) {
@@ -31,7 +39,7 @@ pub fn main() !void {
     }
   }
 
-  const elapsed_ns = timer.read();
+  const elapsed_ns = (try monotonicTimeNs()) - start_ns;
   const elapsed_sec = @as(f64, @floatFromInt(elapsed_ns)) / 1_000_000_000.0;
 
   std.debug.print("{} -- {d:7.3}\n", .{ count, elapsed_sec });

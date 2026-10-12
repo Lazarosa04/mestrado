@@ -109,14 +109,35 @@ MandelbrotCountZO:	MandelbrotCount.zig
 # tests
 #
 compile_all:		MandelbrotCountCgcc MandelbrotCountCOgcc \
-			MandelbrotCountCclang MandelbrotCountCOclang \
-			MandelbrotCount.class \
-			MandelbrotCount.py MandelbrotCount.pyc \
-			MandelbrotCountF MandelbrotCountFO \
-			MandelbrotCountM \
-			MandelbrotCountR MandelbrotCountRO \
-			MandelbrotCountS MandelbrotCountSO \
-			MandelbrotCountZ MandelbrotCountZO
+			MandelbrotCount.py MandelbrotCount.pyc
+
+ifneq ($(shell command -v clang 2>/dev/null),)
+compile_all: MandelbrotCountCclang MandelbrotCountCOclang
+endif
+
+ifneq ($(shell command -v javac 2>/dev/null),)
+compile_all: MandelbrotCount.class
+endif
+
+ifneq ($(shell command -v gfortran 2>/dev/null),)
+compile_all: MandelbrotCountF MandelbrotCountFO
+endif
+
+ifneq ($(shell command -v codon 2>/dev/null),)
+compile_all: MandelbrotCountM
+endif
+
+ifneq ($(shell command -v rustc 2>/dev/null),)
+compile_all: MandelbrotCountR MandelbrotCountRO
+endif
+
+ifneq ($(shell command -v swiftc 2>/dev/null),)
+compile_all: MandelbrotCountS MandelbrotCountSO
+endif
+
+ifneq ($(shell command -v zig 2>/dev/null),)
+compile_all: MandelbrotCountZ MandelbrotCountZO
+endif
 
 run_all:		compile_all
 	@set -e ; \
@@ -127,7 +148,9 @@ run_all:		compile_all
 	if [ -e ./MandelbrotCount.class  ]; then echo -n "java                " ; java MandelbrotCount ;                        fi ; \
 	if [ -e ./MandelbrotCount.py     ]; then echo -n "python              " ; python3 MandelbrotCount.py ;                  fi ; \
 	if [ -e ./MandelbrotCount.pyc    ]; then echo -n "python (byte code)  " ; python3 MandelbrotCount.pyc ;                 fi ; \
-	if [ -e ./MandelbrotCountM       ]; then echo -n "python (codon)      " ; make -s run_codon 2>&1 | tr '\n' ' ' ; echo ; fi ; \
+	if command -v codon >/dev/null 2>&1; then \
+		if [ -x ./MandelbrotCountM ]; then echo -n "python (codon)      " ; make -s run_codon 2>&1 | tr '\n' ' ' ; echo ; fi ; \
+	else echo "python (codon)      skipped (codon not installed)" ; fi ; \
 	if [ -x ./MandelbrotCountF       ]; then echo -n "fortran             " ; ./MandelbrotCountF ;                          fi ; \
 	if [ -x ./MandelbrotCountFO      ]; then echo -n "fortran -O2         " ; ./MandelbrotCountFO ;                         fi ; \
 	if [ -x ./MandelbrotCountR       ]; then echo -n "rust                " ; ./MandelbrotCountR ;                          fi ; \
