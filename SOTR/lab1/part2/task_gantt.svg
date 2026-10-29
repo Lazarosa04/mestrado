@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="342" viewBox="0 0 1600 342">
+<style>text{font-family:Arial,sans-serif;fill:#222}.axis{stroke:#555;stroke-width:1}.grid{stroke:#ddd;stroke-width:1}.bar{stroke:#333;stroke-width:.5}</style>
+<rect width="1600" height="342" fill="white"/>
+<text x="150" y="28" font-size="19" font-weight="bold">Task execution Gantt — 0 to 50 ms</text>
+<text x="150" y="50" font-size="12">Bars show wall-clock start-to-finish; tooltip includes thread CPU time (preemption/blocking is the difference).</text>
+<line class="grid" x1="150.00" y1="72" x2="150.00" y2="286"/>
+<text x="150.00" y="306" text-anchor="middle" font-size="11">0.00 ms</text>
+<line class="grid" x1="291.50" y1="72" x2="291.50" y2="286"/>
+<text x="291.50" y="306" text-anchor="middle" font-size="11">5.00 ms</text>
+<line class="grid" x1="433.00" y1="72" x2="433.00" y2="286"/>
+<text x="433.00" y="306" text-anchor="middle" font-size="11">10.00 ms</text>
+<line class="grid" x1="574.50" y1="72" x2="574.50" y2="286"/>
+<text x="574.50" y="306" text-anchor="middle" font-size="11">15.00 ms</text>
+<line class="grid" x1="716.00" y1="72" x2="716.00" y2="286"/>
+<text x="716.00" y="306" text-anchor="middle" font-size="11">20.00 ms</text>
+<line class="grid" x1="857.50" y1="72" x2="857.50" y2="286"/>
+<text x="857.50" y="306" text-anchor="middle" font-size="11">25.00 ms</text>
+<line class="grid" x1="999.00" y1="72" x2="999.00" y2="286"/>
+<text x="999.00" y="306" text-anchor="middle" font-size="11">30.00 ms</text>
+<line class="grid" x1="1140.50" y1="72" x2="1140.50" y2="286"/>
+<text x="1140.50" y="306" text-anchor="middle" font-size="11">35.00 ms</text>
+<line class="grid" x1="1282.00" y1="72" x2="1282.00" y2="286"/>
+<text x="1282.00" y="306" text-anchor="middle" font-size="11">40.00 ms</text>
+<line class="grid" x1="1423.50" y1="72" x2="1423.50" y2="286"/>
+<text x="1423.50" y="306" text-anchor="middle" font-size="11">45.00 ms</text>
+<line class="grid" x1="1565.00" y1="72" x2="1565.00" y2="286"/>
+<text x="1565.00" y="306" text-anchor="middle" font-size="11">50.00 ms</text>
+<text x="138" y="94" text-anchor="end" font-size="14">Plant</text>
+<line class="axis" x1="150" y1="112" x2="1565" y2="112"/>
+<rect class="bar" x="189.95" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 0; release=1369.995 us; start=1411.639 us; finish=1438.954 us; wall=27.315 us; cpu=2.094 us</title></rect>
+<rect class="bar" x="218.17" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 1; release=2369.995 us; start=2408.664 us; finish=2411.560 us; wall=2.896 us; cpu=1.593 us</title></rect>
+<rect class="bar" x="246.11" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 2; release=3369.995 us; start=3396.072 us; finish=3398.645 us; wall=2.573 us; cpu=1.372 us</title></rect>
+<rect class="bar" x="274.50" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 3; release=4369.995 us; start=4399.322 us; finish=4401.835 us; wall=2.513 us; cpu=1.282 us</title></rect>
+<rect class="bar" x="303.27" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 4; release=5369.995 us; start=5415.791 us; finish=5420.170 us; wall=4.379 us; cpu=2.204 us</title></rect>
+<rect class="bar" x="331.71" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 5; release=6369.995 us; start=6420.999 us; finish=6424.510 us; wall=3.511 us; cpu=1.903 us</title></rect>
+<rect class="bar" x="359.87" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 6; release=7369.995 us; start=7415.728 us; finish=7419.360 us; wall=3.632 us; cpu=1.823 us</title></rect>
+<rect class="bar" x="388.21" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 7; release=8369.995 us; start=8417.429 us; finish=8421.415 us; wall=3.986 us; cpu=2.154 us</title></rect>
+<rect class="bar" x="416.57" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 8; release=9369.995 us; start=9419.377 us; finish=9422.586 us; wall=3.209 us; cpu=1.703 us</title></rect>
+<rect class="bar" x="444.40" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 9; release=10369.995 us; start=10402.699 us; finish=10404.576 us; wall=1.877 us; cpu=1.002 us</title></rect>
+<rect class="bar" x="472.74" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 10; release=11369.995 us; start=11404.335 us; finish=11407.897 us; wall=3.562 us; cpu=1.924 us</title></rect>
+<rect class="bar" x="501.41" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 11; release=12369.995 us; start=12417.201 us; finish=12420.481 us; wall=3.280 us; cpu=1.674 us</title></rect>
+<rect class="bar" x="529.35" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 12; release=13369.995 us; start=13404.589 us; finish=13407.586 us; wall=2.997 us; cpu=1.533 us</title></rect>
+<rect class="bar" x="557.55" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 13; release=14369.995 us; start=14400.897 us; finish=14403.975 us; wall=3.078 us; cpu=1.523 us</title></rect>
+<rect class="bar" x="586.24" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 14; release=15369.995 us; start=15414.834 us; finish=15418.022 us; wall=3.188 us; cpu=1.633 us</title></rect>
+<rect class="bar" x="614.01" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 15; release=16369.995 us; start=16396.107 us; finish=16398.387 us; wall=2.280 us; cpu=1.152 us</title></rect>
+<rect class="bar" x="643.31" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 16; release=17369.995 us; start=17431.298 us; finish=17435.728 us; wall=4.430 us; cpu=2.335 us</title></rect>
+<rect class="bar" x="671.20" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 17; release=18369.995 us; start=18417.006 us; finish=18419.529 us; wall=2.523 us; cpu=1.232 us</title></rect>
+<rect class="bar" x="699.14" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 18; release=19369.995 us; start=19404.243 us; finish=19407.532 us; wall=3.289 us; cpu=1.703 us</title></rect>
+<rect class="bar" x="727.38" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 19; release=20369.995 us; start=20401.983 us; finish=20404.849 us; wall=2.866 us; cpu=1.473 us</title></rect>
+<rect class="bar" x="755.63" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 20; release=21369.995 us; start=21400.340 us; finish=21403.327 us; wall=2.987 us; cpu=1.623 us</title></rect>
+<rect class="bar" x="784.86" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 21; release=22369.995 us; start=22433.337 us; finish=22437.302 us; wall=3.965 us; cpu=2.124 us</title></rect>
+<rect class="bar" x="812.77" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 22; release=23369.995 us; start=23419.347 us; finish=23423.273 us; wall=3.926 us; cpu=2.084 us</title></rect>
+<rect class="bar" x="840.92" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 23; release=24369.995 us; start=24414.137 us; finish=24417.366 us; wall=3.229 us; cpu=1.753 us</title></rect>
+<rect class="bar" x="869.65" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 24; release=25369.995 us; start=25429.485 us; finish=25434.056 us; wall=4.571 us; cpu=2.445 us</title></rect>
+<rect class="bar" x="897.37" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 25; release=26369.995 us; start=26408.942 us; finish=26412.313 us; wall=3.371 us; cpu=1.773 us</title></rect>
+<rect class="bar" x="925.53" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 26; release=27369.995 us; start=27403.999 us; finish=27407.521 us; wall=3.522 us; cpu=1.763 us</title></rect>
+<rect class="bar" x="953.85" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 27; release=28369.995 us; start=28404.555 us; finish=28407.603 us; wall=3.048 us; cpu=1.593 us</title></rect>
+<rect class="bar" x="982.04" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 28; release=29369.995 us; start=29400.762 us; finish=29403.810 us; wall=3.048 us; cpu=1.593 us</title></rect>
+<rect class="bar" x="1010.45" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 29; release=30369.995 us; start=30404.568 us; finish=30407.786 us; wall=3.218 us; cpu=1.753 us</title></rect>
+<rect class="bar" x="1038.80" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 30; release=31369.995 us; start=31406.264 us; finish=31409.987 us; wall=3.723 us; cpu=1.964 us</title></rect>
+<rect class="bar" x="1067.04" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 31; release=32369.995 us; start=32404.378 us; finish=32407.405 us; wall=3.027 us; cpu=1.603 us</title></rect>
+<rect class="bar" x="1096.51" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 32; release=33369.995 us; start=33445.720 us; finish=33450.129 us; wall=4.409 us; cpu=2.364 us</title></rect>
+<rect class="bar" x="1124.25" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 33; release=34369.995 us; start=34425.787 us; finish=34429.006 us; wall=3.219 us; cpu=1.683 us</title></rect>
+<rect class="bar" x="1152.31" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 34; release=35369.995 us; start=35417.226 us; finish=35420.375 us; wall=3.149 us; cpu=1.643 us</title></rect>
+<rect class="bar" x="1180.29" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 35; release=36369.995 us; start=36405.835 us; finish=36408.883 us; wall=3.048 us; cpu=1.613 us</title></rect>
+<rect class="bar" x="1208.31" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 36; release=37369.995 us; start=37396.210 us; finish=37398.581 us; wall=2.371 us; cpu=1.242 us</title></rect>
+<rect class="bar" x="1236.84" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 37; release=38369.995 us; start=38404.334 us; finish=38407.452 us; wall=3.118 us; cpu=1.653 us</title></rect>
+<rect class="bar" x="1265.12" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 38; release=39369.995 us; start=39403.679 us; finish=39406.727 us; wall=3.048 us; cpu=1.583 us</title></rect>
+<rect class="bar" x="1294.09" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 39; release=40369.995 us; start=40427.297 us; finish=40430.849 us; wall=3.552 us; cpu=1.894 us</title></rect>
+<rect class="bar" x="1321.60" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 40; release=41369.995 us; start=41399.257 us; finish=41401.931 us; wall=2.674 us; cpu=1.413 us</title></rect>
+<rect class="bar" x="1350.64" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 41; release=42369.995 us; start=42425.337 us; finish=42428.545 us; wall=3.208 us; cpu=1.673 us</title></rect>
+<rect class="bar" x="1379.06" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 42; release=43369.995 us; start=43429.677 us; finish=43433.521 us; wall=3.844 us; cpu=1.993 us</title></rect>
+<rect class="bar" x="1406.38" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 43; release=44369.995 us; start=44395.027 us; finish=44397.277 us; wall=2.250 us; cpu=1.132 us</title></rect>
+<rect class="bar" x="1434.93" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 44; release=45369.995 us; start=45403.726 us; finish=45406.784 us; wall=3.058 us; cpu=1.573 us</title></rect>
+<rect class="bar" x="1463.20" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 45; release=46369.995 us; start=46402.900 us; finish=46406.119 us; wall=3.219 us; cpu=1.683 us</title></rect>
+<rect class="bar" x="1491.56" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 46; release=47369.995 us; start=47405.101 us; finish=47408.229 us; wall=3.128 us; cpu=1.623 us</title></rect>
+<rect class="bar" x="1519.75" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 47; release=48369.995 us; start=48401.025 us; finish=48404.042 us; wall=3.017 us; cpu=1.573 us</title></rect>
+<rect class="bar" x="1548.11" y="79" width="1.00" height="24" rx="2" fill="#d9534f"><title>Plant job 48; release=49369.995 us; start=49403.176 us; finish=49406.223 us; wall=3.047 us; cpu=1.613 us</title></rect>
+<text x="138" y="136" text-anchor="end" font-size="14">Sensor</text>
+<line class="axis" x1="150" y1="154" x2="1565" y2="154"/>
+<rect class="bar" x="301.47" y="121" width="1.11" height="24" rx="2" fill="#f0ad4e"><title>Sensor job 0; release=5295.851 us; start=5352.252 us; finish=5391.423 us; wall=39.171 us; cpu=37.241 us</title></rect>
+<rect class="bar" x="442.88" y="121" width="1.00" height="24" rx="2" fill="#f0ad4e"><title>Sensor job 1; release=10295.851 us; start=10349.270 us; finish=10363.457 us; wall=14.187 us; cpu=12.915 us</title></rect>
+<rect class="bar" x="583.81" y="121" width="1.00" height="24" rx="2" fill="#f0ad4e"><title>Sensor job 2; release=15295.851 us; start=15329.025 us; finish=15351.213 us; wall=22.188 us; cpu=20.189 us</title></rect>
+<rect class="bar" x="726.43" y="121" width="1.00" height="24" rx="2" fill="#f0ad4e"><title>Sensor job 3; release=20295.851 us; start=20368.514 us; finish=20394.002 us; wall=25.488 us; cpu=23.264 us</title></rect>
+<rect class="bar" x="868.31" y="121" width="1.00" height="24" rx="2" fill="#f0ad4e"><title>Sensor job 4; release=25295.851 us; start=25382.111 us; finish=25412.110 us; wall=29.999 us; cpu=27.783 us</title></rect>
+<rect class="bar" x="1009.56" y="121" width="1.00" height="24" rx="2" fill="#f0ad4e"><title>Sensor job 5; release=30295.851 us; start=30373.177 us; finish=30395.587 us; wall=22.410 us; cpu=20.589 us</title></rect>
+<rect class="bar" x="1150.43" y="121" width="1.00" height="24" rx="2" fill="#f0ad4e"><title>Sensor job 6; release=35295.851 us; start=35350.973 us; finish=35376.239 us; wall=25.266 us; cpu=23.445 us</title></rect>
+<rect class="bar" x="1292.97" y="121" width="1.00" height="24" rx="2" fill="#f0ad4e"><title>Sensor job 7; release=40295.851 us; start=40387.587 us; finish=40413.832 us; wall=26.245 us; cpu=23.916 us</title></rect>
+<rect class="bar" x="1434.04" y="121" width="1.00" height="24" rx="2" fill="#f0ad4e"><title>Sensor job 8; release=45295.851 us; start=45372.537 us; finish=45397.733 us; wall=25.196 us; cpu=22.804 us</title></rect>
+<text x="138" y="178" text-anchor="end" font-size="14">Controller</text>
+<line class="axis" x1="150" y1="196" x2="1565" y2="196"/>
+<rect class="bar" x="303.03" y="163" width="1.00" height="24" rx="2" fill="#5bc0de"><title>Controller job 0; release=5354.058 us; start=5407.406 us; finish=5436.345 us; wall=28.939 us; cpu=26.430 us</title></rect>
+<rect class="bar" x="443.73" y="163" width="1.00" height="24" rx="2" fill="#5bc0de"><title>Controller job 1; release=10350.814 us; start=10379.118 us; finish=10395.333 us; wall=16.215 us; cpu=14.588 us</title></rect>
+<rect class="bar" x="585.03" y="163" width="1.00" height="24" rx="2" fill="#5bc0de"><title>Controller job 2; release=15331.557 us; start=15371.928 us; finish=15396.983 us; wall=25.055 us; cpu=22.893 us</title></rect>
+<rect class="bar" x="727.73" y="163" width="1.00" height="24" rx="2" fill="#5bc0de"><title>Controller job 3; release=20371.279 us; start=20414.425 us; finish=20439.005 us; wall=24.580 us; cpu=22.613 us</title></rect>
+<rect class="bar" x="869.97" y="163" width="1.00" height="24" rx="2" fill="#5bc0de"><title>Controller job 4; release=25384.835 us; start=25440.716 us; finish=25467.557 us; wall=26.841 us; cpu=24.546 us</title></rect>
+<rect class="bar" x="1010.98" y="163" width="1.00" height="24" rx="2" fill="#5bc0de"><title>Controller job 5; release=30375.326 us; start=30423.467 us; finish=30455.615 us; wall=32.148 us; cpu=29.666 us</title></rect>
+<rect class="bar" x="1151.72" y="163" width="1.00" height="24" rx="2" fill="#5bc0de"><title>Controller job 6; release=35353.203 us; start=35396.480 us; finish=35420.647 us; wall=24.167 us; cpu=22.081 us</title></rect>
+<rect class="bar" x="1294.43" y="163" width="1.00" height="24" rx="2" fill="#5bc0de"><title>Controller job 7; release=40390.553 us; start=40439.380 us; finish=40469.420 us; wall=30.040 us; cpu=27.532 us</title></rect>
+<rect class="bar" x="1435.51" y="163" width="1.00" height="24" rx="2" fill="#5bc0de"><title>Controller job 8; release=45375.544 us; start=45424.462 us; finish=45453.351 us; wall=28.889 us; cpu=26.410 us</title></rect>
+<text x="138" y="220" text-anchor="end" font-size="14">Actuator</text>
+<line class="axis" x1="150" y1="238" x2="1565" y2="238"/>
+<rect class="bar" x="304.61" y="205" width="1.00" height="24" rx="2" fill="#5cb85c"><title>Actuator job 0; release=5410.594 us; start=5463.292 us; finish=5466.712 us; wall=3.420 us; cpu=1.904 us</title></rect>
+<rect class="bar" x="444.62" y="205" width="1.00" height="24" rx="2" fill="#5cb85c"><title>Actuator job 1; release=10380.964 us; start=10410.777 us; finish=10413.461 us; wall=2.684 us; cpu=1.412 us</title></rect>
+<rect class="bar" x="586.24" y="205" width="1.00" height="24" rx="2" fill="#5cb85c"><title>Actuator job 2; release=15374.350 us; start=15414.838 us; finish=15418.128 us; wall=3.290 us; cpu=1.673 us</title></rect>
+<rect class="bar" x="728.86" y="205" width="1.00" height="24" rx="2" fill="#5cb85c"><title>Actuator job 3; release=20416.937 us; start=20454.292 us; finish=20457.279 us; wall=2.987 us; cpu=1.513 us</title></rect>
+<rect class="bar" x="871.39" y="205" width="1.00" height="24" rx="2" fill="#5cb85c"><title>Actuator job 4; release=25443.733 us; start=25490.815 us; finish=25494.296 us; wall=3.481 us; cpu=1.823 us</title></rect>
+<rect class="bar" x="1012.32" y="205" width="1.00" height="24" rx="2" fill="#5cb85c"><title>Actuator job 5; release=30426.463 us; start=30470.508 us; finish=30473.626 us; wall=3.118 us; cpu=1.663 us</title></rect>
+<rect class="bar" x="1152.84" y="205" width="1.00" height="24" rx="2" fill="#5cb85c"><title>Actuator job 6; release=35399.033 us; start=35436.106 us; finish=35438.558 us; wall=2.452 us; cpu=1.302 us</title></rect>
+<rect class="bar" x="1295.72" y="205" width="1.00" height="24" rx="2" fill="#5cb85c"><title>Actuator job 7; release=40442.357 us; start=40484.843 us; finish=40487.981 us; wall=3.138 us; cpu=1.684 us</title></rect>
+<rect class="bar" x="1436.75" y="205" width="1.00" height="24" rx="2" fill="#5cb85c"><title>Actuator job 8; release=45427.469 us; start=45468.325 us; finish=45471.463 us; wall=3.138 us; cpu=1.624 us</title></rect>
+<text x="138" y="262" text-anchor="end" font-size="14">Display</text>
+<line class="axis" x1="150" y1="280" x2="1565" y2="280"/>
+<rect class="bar" x="1099.59" y="247" width="6.51" height="24" rx="2" fill="#777777"><title>Display job 0; release=33430.689 us; start=33554.565 us; finish=33784.636 us; wall=230.071 us; cpu=225.808 us</title></rect>
+</svg>

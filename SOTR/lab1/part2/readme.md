@@ -89,3 +89,113 @@ parameter between runs. Expect priority 95 to have little effect on the
 control tasks, while 99 should affect the Plant more clearly. The observed
 result depends on CPU affinity and host scheduling; repeat runs and compare
 the measurements rather than relying on the display alone.
+
+## Shared-memory and POSIX semaphore implementation
+
+`inverted_pendulum_TT_ET_SEM_SHM.c` replaces both message queues with a POSIX
+shared-memory region (`shm_open`/`mmap`) and process-shared POSIX semaphores.
+The Sensor publishes the four state values and signals the Controller; the
+Controller stores the LQR force and signals the Actuator; the Actuator updates
+`g_state.force` and releases the slot for the next sample. The slot semaphore
+prevents a producer from overwriting shared data before the next task consumes
+it, preserving Sensor → Controller → Actuator order with only one sample in
+flight. If the chain takes longer than the Sensor period, the next Sensor
+activation waits for the previous Actuator update before sampling again.
+
+Build and run this variant with the same real-time permissions and optional
+load arguments:
+
+```bash
+gcc -O2 -Wall "inverted_pendulum_TT_ET_SEM_SHM.c" \
+  -o /tmp/inverted_pendulum_sem_shm -pthread -lm -lrt
+sudo /tmp/inverted_pendulum_sem_shm
+```
+
+For a baseline without the periodic load, add `-n`; the other load options
+(`-p`, `-e`, and `-r`) work as described above. The shared-memory object and
+semaphores are cleaned up when the program exits.
+
+### Task timing, Gantt chart, and schedulability
+
+The SEM/SHM executable records one row per job for Plant, Sensor, Controller,
+Actuator, periodic Load (when enabled), and Display. Each row has the scheduled
+release time, actual start/finish times, and thread CPU execution time in
+nanoseconds. Release/start/finish are relative to the run; the additional
+`run_origin_monotonic_ns` column contains the `CLOCK_MONOTONIC` start value
+needed to align these timestamps with a kernel trace. The default output is
+`task_trace.csv`; use `-t path.csv` to choose another file. The trace adds
+clock-read and in-memory logging overhead to each measured job.
+
+Generate an SVG Gantt chart using Python's standard library (no plotting
+package required). A short window makes the 1 ms Plant activations readable:
+
+```bash
+sudo /tmp/inverted_pendulum_sem_shm -n -t task_trace.csv
+python3 plot_task_gantt.py task_trace.csv --start-ms 0 --duration-ms 50 \
+  --output task_gantt.svg
+```
+
+The bars show each job's wall-clock start-to-finish interval. Hover over a bar
+in an SVG-capable viewer to see its release, start, finish, wall duration, and
+CPU time. The difference between wall duration and CPU time includes time
+preempted or blocked; use kernel scheduling traces to distinguish those cases.
+Use `--start-ms` to inspect later sections of the 60 second run.
+
+For Linux systems with `trace-cmd` and the scheduler tracepoints enabled, capture
+the kernel's actual context switches and wakeups in a separate run. The task
+threads are named Plant, Sensor, Controller, Actuator, Load, and Display for
+identification in the trace:
+
+```bash
+sudo trace-cmd record -C mono -o pendulum-sched.dat \
+  -e sched:sched_switch -e sched:sched_wakeup -e sched:sched_waking \
+  /tmp/inverted_pendulum_sem_shm -n
+sudo kernelshark pendulum-sched.dat
+```
+
+In KernelShark, filter or select those task names and compare their wakeups
+and running intervals with the CSV. Add `run_origin_monotonic_ns` to a CSV
+relative timestamp to obtain the corresponding monotonic timestamp.
+`sched_switch` reveals preemptions that a single start/finish bar cannot show.
+Kernel trace collection itself adds overhead, so compare it as a separate
+diagnostic run.
+
+Schedulability should be judged from every measured run, not inferred just
+from a stable animation. For each periodic job, compare its finish time with
+its next release/deadline: 1 ms for Plant and 5 ms for Sensor. For the
+semaphore-triggered Controller and Actuator, check that each job follows its
+preceding release and that the full Sensor-to-Actuator response fits within
+the 5 ms sampling interval. The CSV supplies measured execution times and
+response intervals; the summary reports Plant/Sensor deadline misses.
+A measured utilization estimate for real-time work is
+`Cplant/1 ms + (Csensor + Ccontroller + Cactuator)/5 ms + Cload/Tload`;
+use per-task CPU times from the CSV for each `C`, and exclude Display, which
+runs as `SCHED_OTHER`. This estimate helps identify overload but cannot prove
+schedulability: check response times and misses across repeated runs, and use
+worst-case execution-time/response-time analysis for a guarantee.
+Normal Linux/WSL measurements are empirical and are not a hard real-time
+guarantee.
+
+### RT priority assignment
+
+The RT task priorities are assigned in descending order (Linux
+`SCHED_FIFO`, where a larger number is higher priority):
+
+| Task | Period/activation | Priority |
+|---|---|---:|
+| Plant physics | 1 ms periodic | 99 |
+| Sensor | 5 ms periodic | 98 |
+| Controller | Released by Sensor semaphore | 97 |
+| Actuator | Released by Controller semaphore | 96 |
+| Periodic load (default) | Configurable periodic | 95 |
+| Display | ~33 ms periodic | Normal `SCHED_OTHER` |
+
+This is a rate-monotonic assignment for the periodic deadlines: the 1 ms
+Plant receives the highest priority, and the 5 ms Sensor/Controller/Actuator
+pipeline follows in its required execution order. The semaphores enforce the
+data dependency as well as waking each sporadic task. The load stays below
+the control pipeline by default. Raising it with `-r` is intended for
+interference experiments, not the normal priority assignment; at equal
+`SCHED_FIFO` priority, a running load job can delay the task until it blocks.
+The plant-state mutex uses priority inheritance to bound inversion while
+the higher-priority Plant accesses shared state.
