@@ -13,7 +13,7 @@
 % y = 1.4*10^5 pps
 % C = 1 Gbps
 
-% 7.a
+%% 7.a
 % considera a variavel aleatoria S que representa o tempo de transmissão
 % agregado dos dois fluxos de IP
 % determina a media E[S] e o segundo momento E[S^2]
@@ -34,7 +34,7 @@ E_L2 = p1 * mean(L1.^2) + p2 * mean(L2.^2);
 E_S  = 8 * E_L / C
 E_S2 = (8 / C)^2 * E_L2
 
-% 7.b
+%% 7.b
 % determina o delay de sistema medio de um pacote no fluxo 1 quando ambos
 % os fluxos estão estatisticamente multiplexados na ligação
 
@@ -47,7 +47,7 @@ D1 = Wq + E_S1 + 1e-6
 
 D1_us = D1 * 1e6
 
-% 7.c
+%% 7.c
 % determina o delay de sistema medio de um pacote do fluxo 1 quando 50 Mbps
 % da ligação estão a ser usados no fluxo 1
 
@@ -59,7 +59,7 @@ transmission_time_wire = mean(L1) * 8 / C;
 D1_50 = Wq1_50 + transmission_time_wire + 1e-6;
 D1_50_us = D1_50 * 1e6
 
-% 7.d
+%% 7.d
 % determina o delay de sistema medio de um pacote do fluxo 1 quando 100
 % Mbps da ligação estão a ser usados no fluxo 1
 
@@ -71,7 +71,7 @@ transmission_time_wire = mean(L1) * 8 / C;
 D1_50 = Wq1_50 + transmission_time_wire + 1e-6;
 D1_50_us = D1_50 * 1e6
 
-% 7.e
+%% 7.e
 % desenha um grafico com o delay de sistema medio de um pacote do fluxo 1
 % quando são nele utilizados 50, 75, 100, 125 e 150 Mbps
 

@@ -11,7 +11,7 @@
 
 % considera que x = 18000 pps e C = 100 Mbps
 
-% 6.a 
+%% 6.a
 % determine o tamanho médio de um pacote do fluxo em bytes
 
 packetSizes = 64:1518;
@@ -19,7 +19,7 @@ probabilities = ones(size(packetSizes)) * (0.41 / (numel(packetSizes) - 3));
 probabilities(ismember(packetSizes, [64, 110, 1518])) = [0.19, 0.23, 0.17];
 meanPacketSize = sum(packetSizes .* probabilities)
 
-% 6.b 
+%% 6.b
 % determina a packet loss rate em % da ligação
 
 ber = 1e-5;
@@ -29,21 +29,21 @@ C = 100e6;
 packetErrorProbabilities = 1 - (1 - ber).^(8 * packetSizes);
 packetLossRate = 100 * sum(probabilities .* packetErrorProbabilities)
 
-% 6.c 
+%% 6.c
 % determina a packet loss rate em percentagem da ligação considerando
 % apenas o tamanho medio de pacote determinado em 6.a
 
 meanPacketErrorProbability = 1 - (1 - ber)^(8 * meanPacketSize);
 meanPacketLossRate = 100 * meanPacketErrorProbability
 
-% 6.d 
+%% 6.d
 % determina o throughput e o goodput da ligação em Mbps
 
 throughput = x * sum(probabilities .* packetSizes) * 8 / 1e6
 goodput = x * sum(probabilities .* packetSizes .* ...
     (1 - packetErrorProbabilities)) * 8 / 1e6
 
-% 6.e 
+%% 6.e
 % determina o system delay medio de um pacote no fluxo de IP em
 % milisegundos
 
@@ -54,4 +54,3 @@ arrivalRate = x;
 utilization = arrivalRate * meanServiceTime;
 queueingDelay = arrivalRate * sum(probabilities .* (1 ./ serviceRate).^2) / (2 * (1 - utilization));
 systemDelay = 1000 * (propagationDelay + meanServiceTime + queueingDelay)
-

@@ -6,7 +6,7 @@
 % considere a variavel aleatória X como representando o tempo de
 % transmissão dos pacotes
 
-% 3.a
+%% 3.a
 % determine a média, o segundo momento, a variação e o standard de desvio
 % da variável aleatória X quando a capacidade da ligação é C = 10Mbps
 
@@ -28,13 +28,13 @@ fprintf('Segundo momento: %.6g s^2\n', segundo_momento);
 fprintf('Variância: %.6g s^2\n', variancia);
 fprintf('Desvio padrão: %.6g s\n', desvio_padrao);
 
-% 3.b
+%% 3.b
 % a probabilidade de X ser maior que um milisegundo para C = 10Mbps
 
 probabilidade_maior_1ms = sum(probabilidade(X > 1e-3));
 fprintf('P(X > 1 ms): %.6g\n', probabilidade_maior_1ms);
 
-% 3.c
+%% 3.c
 % repete 3.a mas desta vez considerando que a capacidade C = 100Mbps
 
 C = 100e6;
@@ -49,13 +49,13 @@ fprintf('Segundo momento: %.6g s^2\n', segundo_momento);
 fprintf('Variância: %.6g s^2\n', variancia);
 fprintf('Desvio padrão: %.6g s\n', desvio_padrao);
 
-% 3.d
+%% 3.d
 % probabilidade de X ser maior que 1 milisegundo quando C = 100Mbps
 
 probabilidade_maior_1ms = sum(probabilidade(X > 1e-3));
 fprintf('P(X > 1 ms): %.6g\n', probabilidade_maior_1ms);
 
-% 3.e
+%% 3.e
 % desenha um gráfico com a média de tempo por transmissão de pacote para
 % quando C = 10, 20, 50, 100, 200, 500 e 1000 Mbps
 

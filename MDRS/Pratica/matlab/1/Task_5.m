@@ -13,7 +13,7 @@
 
 % Considera que x = 1500 pps (pacotes por segundo) e C = 10 Mbps
 
-% 5.a
+%% 5.a
 % determina o tamanho medio de um pacote em bytes e o tempo de transmissão
 % medio de um pacote em milisegundos
 
@@ -34,19 +34,19 @@ fprintf('Tempo de transmissao medio: %.2f milissegundos\n', ...
     tempo_transmissao_medio_ms);
 fprintf('Tamanho medio do pacote: %.2f bytes\n', tamanho_medio);
 
-% 5.b
+%% 5.b
 % determina o throughput em Mbps da ligação
 
 throughput_Mbps = min(x * tamanho_medio * 8 / 1e6, C / 1e6);
 fprintf('Throughput da ligacao: %.2f Mbps\n', throughput_Mbps);
 
-% 5.c
+%% 5.c
 % determina a capacidade da ligação em pacotes por segundo
 
 capacidade_pps = C / (tamanho_medio * 8);
 fprintf('Capacidade da ligacao: %.2f pacotes por segundo\n', capacidade_pps);
 
-% 5.d 
+%% 5.d
 % determine o queuing delay medio de um pacote e o packet system delay
 % medio do fluxo IP (o system delay é o queuing delay + tempo de 
 % transmissão + delay de propagação)
@@ -60,7 +60,7 @@ system_delay_ms = queuing_delay_ms + tempo_transmissao_medio_ms + 0.01;
 fprintf('Queuing delay medio: %.4f ms\nSystem delay medio: %.4f ms\n', ...
     queuing_delay_ms, system_delay_ms);
 
-% 5.e
+%% 5.e
 % igual à alínea anterior mas com o modelo M/M/1
 
 tempo_servico_exponencial = tempo_transmissao_medio;
@@ -69,7 +69,7 @@ system_delay_mm1_ms = queuing_delay_mm1_ms + tempo_transmissao_medio_ms + 0.01;
 fprintf('Queuing delay M/M/1: %.4f ms\nSystem delay M/M/1: %.4f ms\n', ...
     queuing_delay_mm1_ms, system_delay_mm1_ms);
 
-% 5.f
+%% 5.f
 % usando o modelo M/M/1 determina a probabilidade da ocupação da queue ser
 % maior que P pacotes para P = 10, 20 e 30
 
@@ -79,7 +79,7 @@ probabilidade_queue_maior = rho .^ (P + 2);
 fprintf('Probabilidade da ocupacao da queue ser maior que %d pacotes: %.3f%%\n', ...
     [P; 100 * probabilidade_queue_maior]);
 
-% 5.g 
+%% 5.g
 % desenha um grafico com a média do delay de sistema usando o modelo M/G/1
 % (de 10 em 10 milisegundos)
 % em função da arrival rate dos pacotes desde 500pps até 2000pps.
