@@ -1,0 +1,10 @@
+{
+	"folders": [],
+	"settings": {
+		"nrf-connect.applications": [],
+		"files.associations": {
+			"gpio.h": "c",
+			"statechart.h": "c"
+		}
+	}
+}

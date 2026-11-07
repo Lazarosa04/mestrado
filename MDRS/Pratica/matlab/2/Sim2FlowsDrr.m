@@ -1,0 +1,177 @@
+function [PL , APD , MPD , TT] = Sim2FlowsDrr(lambda,C,f,P,quantum,inv)
+% INPUT PARAMETERS:
+%  lambda - row vector with the packet rate of each flow (packets/sec)
+%  C      - link bandwidth (Mbps)
+%  f      - vector of the queue sizes of both flows (Bytes)
+%  P      - number of packets (stopping criterium)
+%  quantum - quantum value in bytes assigned to each flow
+%  inv    - False if order of flow, True if order of flow is inverted
+% OUTPUT PARAMETERS:
+%  PL   - row vector with the packet loss (%) of each flow
+%  APD  - row vector with the average packet delay (milliseconds) of each flow
+%  MPD  - maximum packet delay (milliseconds) of each flow
+%  TT   - transmitted throughput (Mbps) of each flow
+
+
+%In DRR, a given quantum value 𝑞𝑖 (in Bytes) for each flow 𝑖 is
+%initially configured. Then, at each round:
+%– the algorithm moves (to the final queue) the first packets from each
+%non-empty queue whose total size is not higher than its quantum;
+%– the difference between the number of selected bytes and the
+%quantum is computed as a credit for the next round;
+%– when a queue is empty, its credit is set to zero.
+
+%Events:
+ARRIVAL= 0;       % Arrival of a packet            
+DEPARTURE= 1;     % Departure of a packet
+
+%State variables:
+STATE = 0;                      % 0 - connection is free; 1 - connection is occupied
+QUEUEOCCUPATION= zeros(1,2);    % Occupation of the queues (in Bytes) 
+QUEUE= {[] []};                 % Size, arriving time instant and flowID of each packet in the queue //uma queue para cada fluxo 
+FINALQUEUE = {[]};              %
+credit = zeros(1,2);            % DRR credit for each flow
+
+% Initializing the required Statistical Counters:
+TOTALPACKETS= zeros(1,2);     % No. of packets of each flow arrived to the system
+LOSTPACKETS= zeros(1,2);      % No. of packets of each flow lost due to buffer fulness
+TRANSPACKETS= zeros(1,2);     % No. of transmitted packets of each flow
+TRANSBYTES= zeros(1,2);       % Sum of the Bytes of all transmitted packets of each flow
+DELAYS= zeros(1,2);           % Sum of the delays of all transmitted packets of each flow
+MAXDELAY= zeros(1,2);         % Maximum delay among all transmitted packets of each flow
+
+% Initializing the Simulation Clock:
+Clock= 0;
+
+% Each row of Event List:
+% Row 1: Event Type
+% Row 2: Time instant of event occurrence
+% Row 3: Packet size
+% Row 4: Flow ID of the packet
+% Row 5: Time instant of the packet arrival to the system
+%
+% Initializing the List of Events with the first ARRIVAL of each flow:
+tmp= Clock + exprnd(1/lambda(1));
+EventList = [ARRIVAL, tmp, GenerateSize1(), 1, tmp];
+tmp= Clock + exprnd(1/lambda(2));
+EventList = [EventList; ARRIVAL, tmp, GenerateSize2(), 2, tmp];
+
+% Simulation loop:
+while sum(TRANSPACKETS)<P       % Simulation stopping criterion
+    EventList= sortrows(EventList,2); % Order EventList by 2nd column (the time instant)
+    Event= EventList(1,1);            % Get event 
+    Clock= EventList(1,2);            % Get the time instant of the event 
+    PacketSize= EventList(1,3);       % Get the packet size of the event
+    Flow= EventList(1,4);             % Get the flow ID of the packet
+    ArrInstant= EventList(1,5);       % Get the arriving instant of the packet
+    EventList(1,:)= [];               % Eliminate first event from the EventList
+    switch Event
+        case ARRIVAL         % If event is an ARRIVAL
+            TOTALPACKETS(Flow)= TOTALPACKETS(Flow)+1;
+            tmp= Clock + exprnd(1/lambda(Flow));
+            if Flow==1
+                nextPacketSize= GenerateSize1();
+            else
+                nextPacketSize= GenerateSize2();
+            end
+            EventList = [EventList; ARRIVAL, tmp, nextPacketSize, Flow, tmp];
+            if STATE==0
+                % em vez de fazer logo a transmissão, colocamos os pacotes nas respetivas queues
+                % e passamos pelo DDR que vai pegar no pacote e por na final queue
+                if QUEUEOCCUPATION(Flow) + PacketSize <= f(Flow)
+                    QUEUE{Flow}= [QUEUE{Flow}; PacketSize , Clock, Flow];
+                    QUEUEOCCUPATION(Flow)= QUEUEOCCUPATION(Flow) + PacketSize;
+                else
+                    LOSTPACKETS(Flow)= LOSTPACKETS(Flow) + 1;
+                end
+                % chamar o round robin
+                [QUEUE, FINALQUEUE, QUEUEOCCUPATION, credit] = enterDDR(QUEUE, FINALQUEUE, QUEUEOCCUPATION, credit, quantum, inv);
+                if size(FINALQUEUE{1}, 1) > 0
+                % se o round robin tiver colocado pacotes na final queue, agendamos a sua Departure
+                    NextPacket = FINALQUEUE{1}(1, :);
+                    FINALQUEUE{1}(1, :) = [];
+                    EventList = [EventList; DEPARTURE, Clock + 8*NextPacket(1)/(C*1e6), NextPacket(1), NextPacket(3), NextPacket(2)];
+                    STATE = 1;
+                end
+            else
+                if QUEUEOCCUPATION(Flow) + PacketSize <= f(Flow)
+                    QUEUE{Flow}= [QUEUE{Flow}; PacketSize , Clock, Flow];
+                    QUEUEOCCUPATION(Flow)= QUEUEOCCUPATION(Flow) + PacketSize;
+                else
+                    LOSTPACKETS(Flow)= LOSTPACKETS(Flow) + 1;
+                end
+            end
+        case DEPARTURE          % If event is a DEPARTURE
+            TRANSBYTES(Flow)= TRANSBYTES(Flow) + PacketSize;
+            TRANSPACKETS(Flow)= TRANSPACKETS(Flow) + 1;
+            DELAYS(Flow)= DELAYS(Flow) + (Clock - ArrInstant);
+            if Clock - ArrInstant > MAXDELAY(Flow)
+                MAXDELAY(Flow)= Clock - ArrInstant;
+            end
+            % se a finalqueue estiver vazia chama o ddr para a rebastecer
+            if size(FINALQUEUE{1}, 1) == 0
+                [QUEUE, FINALQUEUE, QUEUEOCCUPATION, credit] = enterDDR(QUEUE, FINALQUEUE, QUEUEOCCUPATION, credit, quantum, inv);
+            end
+            % agenda a transmissão do proximo pacote 
+            if size(FINALQUEUE{1}, 1) > 0
+                NextPacket = FINALQUEUE{1}(1, :);
+                FINALQUEUE{1}(1, :) = [];
+                EventList = [EventList; DEPARTURE, Clock + 8*NextPacket(1)/(C*1e6), NextPacket(1), NextPacket(3), NextPacket(2)];
+            else
+            % se não houver nenhum pacote então a conexao esta livre
+                STATE = 0;
+            end
+    end
+end
+
+% Performance parameters determination:
+PL= 100*LOSTPACKETS./TOTALPACKETS;  % in percentage
+APD= 1000*DELAYS./TRANSPACKETS;     % in milliseconds
+MPD= 1000*MAXDELAY;                % in milliseconds
+TT= 1e-6*TRANSBYTES*8/Clock;       % in Mbps
+
+end
+
+function out= GenerateSize1()
+    aux= rand();
+    aux2= [65:109 111:1517];
+    if aux <= 0.19
+        out= 64;
+    elseif aux <= 0.19 + 0.23
+        out= 110;
+    elseif aux <= 0.19 + 0.23 + 0.17
+        out= 1518;
+    else
+        out = aux2(randi(length(aux2)));
+    end
+end
+
+function out= GenerateSize2()
+    out= randi([110 130]);
+end
+
+function [QUEUE, FINALQUEUE, QUEUEOCCUPATION, credit] = enterDDR(QUEUE, FINALQUEUE, QUEUEOCCUPATION, credit, quantum, inv)
+    if inv == 0
+        flowOrder = [1 2];
+    else
+        flowOrder = [2 1];
+    end
+
+    for Flow = flowOrder
+        if QUEUEOCCUPATION(Flow) == 0   
+            credit(Flow) = 0;       % se a fila estiver vazia creditos a 0
+        else
+            credit(Flow) = credit(Flow) + quantum(Flow);
+            while QUEUEOCCUPATION(Flow) > 0 && QUEUE{Flow}(1, 1) <= credit(Flow)
+                PacketSize = QUEUE{Flow}(1, 1);
+                FINALQUEUE{1} = [FINALQUEUE{1}; QUEUE{Flow}(1, :)];
+                QUEUE{Flow}(1, :) = [];
+                QUEUEOCCUPATION(Flow) = QUEUEOCCUPATION(Flow) - PacketSize;
+                credit(Flow) = credit(Flow) - PacketSize;
+            end
+            if QUEUEOCCUPATION(Flow) == 0
+                credit(Flow) = 0;   % se, depois de mover os pacotes para a fila final, a fila ficar vazia, repor creditos a 0
+            end
+        end
+    end
+end

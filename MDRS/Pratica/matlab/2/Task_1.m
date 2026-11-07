@@ -56,7 +56,8 @@ function results = runExperiment(y, C, f, P)
     metricNames = {'PL (%)', 'APD (ms)', 'MPD (ms)', 'TT (Mbps)'};
     metricSamples = {PL, APD, MPD, TT};
     metricFields = {'PL', 'APD', 'MPD', 'TT'};
-    tCritical = tinv(1 - (1 - confidenceLevel)/2, nRuns - 1);
+    alpha = 1 - confidenceLevel;
+    zCritical = norminv(1 - alpha/2);
     
     fprintf('\nResultados para y = [%g %g], C = %g Mbps, f = %g Bytes, P = %g:\n', ...
         y(1), y(2), C, f, P);
@@ -64,18 +65,17 @@ function results = runExperiment(y, C, f, P)
     for metric = 1:numel(metricNames)
         samples = metricSamples{metric};
         estimate = mean(samples, 1);
-        margin = tCritical * std(samples, 0, 1) / sqrt(nRuns);
+        margin = zCritical * sqrt(var(samples, 0, 1) / nRuns);
         confidenceInterval = [estimate - margin; estimate + margin];
     
         results.(metricFields{metric}).estimate = estimate;
         results.(metricFields{metric}).confidenceInterval = confidenceInterval;
     
-        fprintf('\n%s (estimativa e intervalo de confiança de %.0f%%):\n', ...
+        fprintf('\n%s (estimativa +- erro, IC de %.0f%%):\n', ...
             metricNames{metric}, confidenceLevel * 100);
         for flow = 1:2
-            fprintf('  Fluxo %d: %.6g [%.6g, %.6g]\n', flow, ...
-                estimate(flow), confidenceInterval(1, flow), ...
-                confidenceInterval(2, flow));
+            fprintf('  Fluxo %d: %.6g +- %.6g\n', flow, ...
+                estimate(flow), margin(flow));
         end
     end
 end
