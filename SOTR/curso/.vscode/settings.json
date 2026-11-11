@@ -1,0 +1,6 @@
+{
+    "cmake.sourceDirectory": "C:/Users/ruisa/Desktop/work/mestrado/SOTR/curso/1_e2",
+    "nrf-connect.applications": [
+        "${workspaceFolder}\\1_e2"
+    ]
+}
