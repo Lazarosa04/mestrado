@@ -53,3 +53,50 @@ fprintf('\nTheoretical throughput for case C:\n');
 for flow = 1:numel(y)
     fprintf('Flow %d: throughput = %.6f Mbps\n', flow, throughputMbps(flow));
 end
+
+%% 1.d.
+% Case A: y1 = 400pps, y2 = 400pps, y3 = 600pps
+% Case B: y1 = 600pps, y2 = 600pps, y3 = 600pps
+% Case C: y1 = 800pps, y2 = 800pps, y3 = 600pps
+
+cases = [400 400 600;   % A
+         600 600 600;   % B
+         800 800 600];  % C
+
+results = cell(3,1);
+for k = 1:3
+    results{k} = runExperiment(cases(k,:), C, f, P);
+end
+
+%% 1.d. graficos
+
+apd = zeros(1,3);
+apdCI = zeros(2,3);
+mpd = zeros(1,3);
+mpdCI = zeros(2,3);
+
+for k = 1:3
+    apd(k) = results{k}.APD.estimate(3);
+    apdCI(:,k) = results{k}.APD.confidenceInterval(:,3);
+
+    mpd(k) = results{k}.MPD.estimate(3);
+    mpdCI(:,k) = results{k}.MPD.confidenceInterval(:,3);
+end
+
+figure;
+bar(apd);
+hold on;
+errorbar(1:3, apd, apd-apdCI(1,:), apdCI(2,:)-apd, ...
+    'Color', 'w', 'LineWidth', 0.7, 'CapSize', 10, 'LineStyle', 'none');
+xticks(1:3);
+xticklabels(["A" "B" "C"]);
+ylabel('Average packet delay of Flow 3 (ms)');
+
+figure;
+bar(mpd);
+hold on;
+errorbar(1:3, mpd, mpd-mpdCI(1,:), mpdCI(2,:)-mpd, ...
+    'Color', 'w', 'LineWidth', 0.7, 'CapSize', 10, 'LineStyle', 'none');
+xticks(1:3);
+xticklabels(["A" "B" "C"]);
+ylabel('Maximum packet delay of Flow 3 (ms)');
