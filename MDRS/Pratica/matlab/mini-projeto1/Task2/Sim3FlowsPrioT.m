@@ -21,6 +21,7 @@ QUEUEOCCUPATION= zeros(1,3);    % Occupation of the queues (in Bytes)
 QUEUE= {[] [] []};              % Size, arriving time instant and flowID of each packet in the queue, for the three queues
 
 % Initializing the required Statistical Counters:
+% passa tudo a 3 para os 3 fluxos
 TOTALPACKETS= zeros(1,3);     % No. of packets of each flow arrived to the system
 LOSTPACKETS= zeros(1,3);      % No. of packets of each flow lost due to buffer fulness
 TRANSPACKETS= zeros(1,3);     % No. of transmitted packets of each flow
@@ -43,6 +44,7 @@ tmp= Clock + exprnd(1/lambda(1));
 EventList = [ARRIVAL, tmp, GenerateSize1(), 1, tmp];
 tmp= Clock + exprnd(1/lambda(2));
 EventList = [EventList; ARRIVAL, tmp, GenerateSize2(), 2, tmp];
+% adicionar 3º fluxo
 tmp= Clock + exprnd(1/lambda(3));
 EventList = [EventList; ARRIVAL, tmp, GenerateSize3(), 3, tmp];
 
