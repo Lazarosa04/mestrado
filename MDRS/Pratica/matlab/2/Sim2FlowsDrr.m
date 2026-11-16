@@ -75,24 +75,9 @@ while sum(TRANSPACKETS)<P       % Simulation stopping criterion
                 nextPacketSize= GenerateSize2();
             end
             EventList = [EventList; ARRIVAL, tmp, nextPacketSize, Flow, tmp];
-            if STATE==0
-                % em vez de fazer logo a transmissão, colocamos os pacotes nas respetivas queues
-                % e passamos pelo DDR que vai pegar no pacote e por na final queue
-                if QUEUEOCCUPATION(Flow) + PacketSize <= f(Flow)
-                    QUEUE{Flow}= [QUEUE{Flow}; PacketSize , Clock, Flow];
-                    QUEUEOCCUPATION(Flow)= QUEUEOCCUPATION(Flow) + PacketSize;
-                else
-                    LOSTPACKETS(Flow)= LOSTPACKETS(Flow) + 1;
-                end
-                % chamar o round robin
-                [QUEUE, FINALQUEUE, QUEUEOCCUPATION, credit] = enterDDR(QUEUE, FINALQUEUE, QUEUEOCCUPATION, credit, quantum, inv);
-                if size(FINALQUEUE{1}, 1) > 0
-                % se o round robin tiver colocado pacotes na final queue, agendamos a sua Departure
-                    NextPacket = FINALQUEUE{1}(1, :);
-                    FINALQUEUE{1}(1, :) = [];
-                    EventList = [EventList; DEPARTURE, Clock + 8*NextPacket(1)/(C*1e6), NextPacket(1), NextPacket(3), NextPacket(2)];
-                    STATE = 1;
-                end
+             if STATE==0
+                STATE= 1;
+                EventList = [EventList; DEPARTURE, Clock + 8*PacketSize/(C*1e6), PacketSize, Flow, Clock];
             else
                 if QUEUEOCCUPATION(Flow) + PacketSize <= f(Flow)
                     QUEUE{Flow}= [QUEUE{Flow}; PacketSize , Clock, Flow];
@@ -110,7 +95,7 @@ while sum(TRANSPACKETS)<P       % Simulation stopping criterion
             end
             % se a finalqueue estiver vazia chama o ddr para a rebastecer
             if size(FINALQUEUE{1}, 1) == 0
-                [QUEUE, FINALQUEUE, QUEUEOCCUPATION, credit] = enterDDR(QUEUE, FINALQUEUE, QUEUEOCCUPATION, credit, quantum, inv);
+                [QUEUE, FINALQUEUE, QUEUEOCCUPATION, credit] = enterDRR(QUEUE, FINALQUEUE, QUEUEOCCUPATION, credit, quantum, inv);
             end
             % agenda a transmissão do proximo pacote 
             if size(FINALQUEUE{1}, 1) > 0
@@ -150,11 +135,11 @@ function out= GenerateSize2()
     out= randi([110 130]);
 end
 
-function [QUEUE, FINALQUEUE, QUEUEOCCUPATION, credit] = enterDDR(QUEUE, FINALQUEUE, QUEUEOCCUPATION, credit, quantum, inv)
-    if inv == 0
-        flowOrder = [1 2];
-    else
+function [QUEUE, FINALQUEUE, QUEUEOCCUPATION, credit] = enterDRR(QUEUE, FINALQUEUE, QUEUEOCCUPATION, credit, quantum, inv)
+    if inv
         flowOrder = [2 1];
+    else
+        flowOrder = [1 2];
     end
 
     for Flow = flowOrder
@@ -168,9 +153,6 @@ function [QUEUE, FINALQUEUE, QUEUEOCCUPATION, credit] = enterDDR(QUEUE, FINALQUE
                 QUEUE{Flow}(1, :) = [];
                 QUEUEOCCUPATION(Flow) = QUEUEOCCUPATION(Flow) - PacketSize;
                 credit(Flow) = credit(Flow) - PacketSize;
-            end
-            if QUEUEOCCUPATION(Flow) == 0
-                credit(Flow) = 0;   % se, depois de mover os pacotes para a fila final, a fila ficar vazia, repor creditos a 0
             end
         end
     end
