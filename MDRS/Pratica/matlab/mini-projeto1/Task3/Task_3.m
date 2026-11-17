@@ -35,13 +35,13 @@ minBytes = [100 100 500];
 maxBytes = [1500 150 1000];
 meanBytes = (minBytes + maxBytes) / 2; % [800 125 750] bytes
 
-% 3.c e 3.d, case D, y1 = y2 = y3 = 1000 pps
+% para 3.c e 3.d, case D, y1 = y2 = y3 = 1000 pps
 C1 = 1000*800*8e6;  % 6.4Mbps
 C2 = 1000*125*8e6;  % 1Mbps
 C3 = 1000*750*8e6;  % 6Mbps
 CTotal = C1+C2+C3;  % 13.4 Mbps > C = 10Mbps
 
-% 3.C
+% no caso de 3.C
 quantum = [1500 1500 1500]  % i.e os fluxos têm todos o mesmo peso
 % temos 10 Mbps para distribuir por igual pelos 3 fluxos
 % o fluxo 2 só suporta 1Mbps por isso recebe logo isso
@@ -50,7 +50,7 @@ quantum = [1500 1500 1500]  % i.e os fluxos têm todos o mesmo peso
 % logo a distribuição ideal do throughput para este caso é:
 ideal = [4.5 1 4.5]
 
-% 3.d
+% no caso de 3.d
 quantum = [1500 1500 4500]  % i.e o fluxo 3 vale 3 vezes mais que os outros fluxos
 % ou seja a distribuição deve seguir este padrão [1 1 3]
 % temos 10 Mbps para distribuir pelos 3 fluxos seguindo esse padrão
