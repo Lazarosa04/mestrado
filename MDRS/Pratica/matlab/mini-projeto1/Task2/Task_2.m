@@ -2,7 +2,7 @@
 % 90% confidence intervals
 % 50 runs
 % Queue sizes
-f = [1000000 1000000 1000000];
+f = [1000000 1000000];
 % Capacity
 C = 10;
 % Stopping criterion

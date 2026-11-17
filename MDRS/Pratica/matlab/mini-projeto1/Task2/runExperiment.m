@@ -18,8 +18,8 @@ function results = runExperiment(y, C, f, P, prio)
     zCritical = norminv(1 - alpha/2);
     
     fprintf(['\nResultados para y = [%g %g %g], C = %g Mbps, ' ...
-        'f = [%g %g %g] Bytes, P = %g, prioridade = %d:\n'], ...
-        y(1), y(2), y(3), C, f(1), f(2), f(3), P, prio);
+        'f = [%g %g] Bytes, P = %g, prioridade = %d:\n'], ...
+        y(1), y(2), y(3), C, f(1), f(2), P, prio);
     
     for metric = 1:numel(metricNames)
         samples = metricSamples{metric};

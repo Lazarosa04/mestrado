@@ -2,7 +2,7 @@ function [PL , APD , MPD , TT] = Sim3FlowsPrioT(lambda,C,f,P, prio)
 % INPUT PARAMETERS:
 %  lambda - row vector with the packet rate of each flow (packets/sec)
 %  C      - link bandwidth (Mbps)
-%  f      - vector of the queue sizes of the three flows (Bytes)
+%  f      - vector of the queue sizes of the two priority queues (Bytes)
 %  P      - number of packets (stopping criterium)
 %  prio   - 1 if flow 3 has priority, 0 if flows 1/2 have priority
 % OUTPUT PARAMETERS:
@@ -17,8 +17,8 @@ DEPARTURE= 1;     % Departure of a packet
 
 %State variables:
 STATE = 0;                      % 0 - connection is free; 1 - connection is occupied
-QUEUEOCCUPATION= zeros(1,3);    % Occupation of the queues (in Bytes) 
-QUEUE= {[] [] []};              % Size, arriving time instant and flowID of each packet in the queue, for the three queues
+QUEUEOCCUPATION= zeros(1,2);    % Occupation of the queues (in Bytes) 
+QUEUE= {[] []};              % Size, arriving time instant and flowID of each packet in queue 1/2
 
 % Initializing the required Statistical Counters:
 % passa tudo a 3 para os 3 fluxos
@@ -61,24 +61,28 @@ while sum(TRANSPACKETS)<P       % Simulation stopping criterion
         case ARRIVAL         % If event is an ARRIVAL
             TOTALPACKETS(Flow)= TOTALPACKETS(Flow)+1;
             tmp= Clock + exprnd(1/lambda(Flow));
+            % os fluxos 1 e 2 vão para a mesma queue pois têm a mesma prioridade 
             switch Flow
                 case 1
-                    nextPacketSize= GenerateSize1();
+                    nextPacketSize = GenerateSize1();
+                    Q = 1;
                 case 2
-                    nextPacketSize= GenerateSize2();
+                    nextPacketSize = GenerateSize2();
+                    Q = 1;
                 case 3
-                    nextPacketSize= GenerateSize3();
+                    nextPacketSize = GenerateSize3();
+                    Q = 2;
             end
             EventList = [EventList; ARRIVAL, tmp, nextPacketSize, Flow, tmp];
             if STATE==0
                 STATE= 1;
                 EventList = [EventList; DEPARTURE, Clock + 8*PacketSize/(C*1e6), PacketSize, Flow, Clock];
             else
-                if QUEUEOCCUPATION(Flow) + PacketSize <= f(Flow)
-                    QUEUE{Flow}= [QUEUE{Flow}; PacketSize , Clock, Flow];
-                    QUEUEOCCUPATION(Flow)= QUEUEOCCUPATION(Flow) + PacketSize;
+                if QUEUEOCCUPATION(Q) + PacketSize <= f(Q)
+                    QUEUE{Q} = [QUEUE{Q}; PacketSize, Clock, Flow];
+                    QUEUEOCCUPATION(Q) = QUEUEOCCUPATION(Q) + PacketSize;
                 else
-                    LOSTPACKETS(Flow)= LOSTPACKETS(Flow) + 1;
+                    LOSTPACKETS(Flow) = LOSTPACKETS(Flow) + 1;
                 end
             end
         case DEPARTURE          % If event is a DEPARTURE
@@ -90,49 +94,28 @@ while sum(TRANSPACKETS)<P       % Simulation stopping criterion
             end
             QFlow = 0;
             if prio == 1
-                if QUEUEOCCUPATION(3) > 0
-                    QFlow = 3;
-                elseif QUEUEOCCUPATION(1) > 0 && QUEUEOCCUPATION(2) > 0
-                    Q1Instant = QUEUE{1}(1, 2);
-                    Q2Instant = QUEUE{2}(1, 2);
-                    if Q1Instant <= Q2Instant
-                        QFlow = 1;
-                    else
-                        QFlow = 2;
-                    end
+                if QUEUEOCCUPATION(2) > 0
+                    QFlow = 2;
                 elseif QUEUEOCCUPATION(1) > 0
                     QFlow = 1;
-                elseif QUEUEOCCUPATION(2) > 0
-                    QFlow = 2;
                 else
                     STATE = 0;
                 end
-            elseif prio == 0
-                if QUEUEOCCUPATION(1) > 0 && QUEUEOCCUPATION(2) > 0
-                    Q1Instant = QUEUE{1}(1,2);
-                    Q2Instant = QUEUE{2}(1,2);
-                    if Q1Instant <= Q2Instant
-                        QFlow = 1;
-                    else
-                        QFlow = 2;
-                    end
-                elseif QUEUEOCCUPATION(1) > 0
-                    QFlow = 1;
-                elseif QUEUEOCCUPATION(2) > 0
-                    QFlow = 2;
-                elseif QUEUEOCCUPATION(3) > 0
-                    QFlow = 3;
-                else
-                    STATE = 0;
-                end
+
             else
-                STATE = 0;
+                if QUEUEOCCUPATION(1) > 0
+                    QFlow = 1;
+                elseif QUEUEOCCUPATION(2) > 0
+                    QFlow = 2;
+                else
+                    STATE = 0;
+                end
             end
             if QFlow > 0
                 QSize = QUEUE{QFlow}(1, 1);
                 QInstant = QUEUE{QFlow}(1, 2);
-                EventList = [EventList; DEPARTURE, ...
-                    Clock + 8*QSize/(C*1e6), QSize, QFlow, QInstant];
+                PacketFlow = QUEUE{QFlow}(1, 3);
+                EventList = [EventList; DEPARTURE, Clock + 8*QSize/(C*1e6), QSize, PacketFlow, QInstant];
                 QUEUEOCCUPATION(QFlow) = QUEUEOCCUPATION(QFlow) - QSize;
                 QUEUE{QFlow}(1, :) = [];
             end
