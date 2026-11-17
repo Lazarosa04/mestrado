@@ -1,0 +1,1051 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[portuguese]{babel}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{multicol}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{caption}
+\usepackage{microtype}
+\usepackage{underscore}
+
+
+% --- Definição de Cores ---
+\definecolor{primaryColor}{RGB}{26, 54, 93}
+\definecolor{secondaryColor}{RGB}{43, 108, 176}
+\definecolor{textColor}{RGB}{45, 55, 72}
+\definecolor{lightGray}{RGB}{247, 250, 252}
+\usepackage[colorlinks=true, linkcolor=primaryColor, urlcolor=secondaryColor]{hyperref}
+
+% --- Configuração das Margens ---
+\geometry{
+    a4paper,
+    top=30mm,
+    bottom=30mm,
+    left=25mm,
+    right=25mm,
+    headheight=15pt,
+    footskip=15mm
+}
+
+\color{textColor}
+\renewcommand{\baselinestretch}{1.15}
+
+% --- Configuração de Cabeçalhos e Rodapés ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{gray}Mini-Project 1 -- MDRS}
+\fancyfoot[C]{\small\color{textColor}\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{gray!50}\leaders\hrule height \headrulewidth\hfill}}
+
+% --- Estilização das Secções ---
+\titleformat{\section}
+  {\Large\bfseries\color{primaryColor}}
+  {\thesection}{1em}{}[{\color{secondaryColor!40}\titlerule[1.5pt]}]
+
+\titleformat{\subsection}
+  {\large\bfseries\color{secondaryColor}}
+  {\thesubsection}{1em}{}
+
+\captionsetup{
+    labelfont={bf,color=primaryColor},
+    font=small,
+    labelsep=quad,
+    margin=10pt
+}
+
+\setlist[itemize]{leftmargin=*, topsep=4pt, itemsep=3pt, parsep=0pt, partopsep=0pt}
+
+\usepackage{listings}
+\definecolor{codegray}{rgb}{0.95,0.95,0.95}
+
+\lstset{
+    backgroundcolor=\color{codegray},
+    basicstyle=\ttfamily\small,
+    frame=single,
+    breaklines=true,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green!50!black},
+    stringstyle=\color{red},
+    showstringspaces=false,
+    tabsize=4
+}
+
+\renewcommand{\lstlistingname}{Listagem}
+
+\begin{document}
+
+% ==============================================================================
+% PÁGINA DE ROSTO
+% ==============================================================================
+\begin{titlepage}
+    \centering
+
+    \vspace*{1cm}
+
+    {\color{secondaryColor}\rule{\linewidth}{2pt}\par}
+    \vspace{0.6cm}
+
+    {\huge \bfseries \color{primaryColor}
+    Mini-Project 1:\\
+    Performance Evaluation of Point-to-Point Links\par}
+
+    \vspace{0.4cm}
+
+    {\large \color{secondaryColor}
+    Supporting Multiple Packet Flows\par}
+
+    \vspace{0.2cm}
+
+    {\color{secondaryColor}\rule{\linewidth}{2pt}\par}
+
+    \vspace{2cm}
+
+    {\Large \textsc{Modelação e Desempenho de Redes e Serviços}\par}
+
+    \vspace{0.3cm}
+    {\large Ano letivo 2026/2027\par}
+
+    \vfill
+
+    \begin{tabular}{rlll}
+        \textbf{Grupo} & Ricardo Carmo   & (112657) &   50 \%\\
+                       & Lázaro Sá       & (115884) &   50 \%\\
+                       
+    \end{tabular}
+
+    \vspace{0.8cm}
+
+    \vfill
+
+    {\large \color{textColor!70} \today\par}
+
+    \vspace*{1cm}
+\end{titlepage}
+
+\clearpage
+\tableofcontents
+\clearpage
+
+% ==============================================================================
+% CONTEÚDO DO RELATÓRIO
+% ==============================================================================
+
+\section{Tarefa 1.a -- Simulador para três fluxos}
+
+O simulador das aulas (\texttt{Sim2Flows}, Guião 2) já era genérico em tudo
+exceto no número de fluxos: a lista de eventos, a fila em bytes, o teste de
+admissão e as fórmulas dos parâmetros de desempenho não dependem do número de
+fluxos. A nova versão \texttt{Sim3FlowsT} mantém essa estrutura e generaliza-a
+para os três fluxos do enunciado; por isso, apenas se apresentam os trechos
+novos ou editados.
+
+
+
+\subsection*{Alterações introduzidas e sua justificação}
+
+\begin{itemize}
+    \item \textbf{Contadores estatísticos de 2 para 3 posições.} Todos os
+    contadores do simulador base (\texttt{TOTALPACKETS}, \texttt{LOSTPACKETS},
+    \texttt{TRANSPACKETS}, \texttt{TRANSBYTES}, \texttt{DELAYS},
+    \texttt{MAXDELAY}) passaram de \lstinline|zeros(1,2)| para
+    \lstinline|zeros(1,3)|. Como as estatísticas são mantidas por fluxo e
+    indexadas pelo identificador do fluxo, sem esta alteração uma chegada do
+    fluxo~3 originaria um erro de indexação. O mesmo se aplica às saídas
+    \texttt{PL}, \texttt{APD}, \texttt{MPD} e \texttt{TT}, que passam a ser
+    vetores de três elementos.
+
+    \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+TOTALPACKETS= zeros(1,3);     % No. of packets of each flow arrived to the system
+LOSTPACKETS= zeros(1,3);      % No. of packets of each flow lost due to buffer fullness
+TRANSPACKETS= zeros(1,3);     % No. of transmitted packets of each flow
+TRANSBYTES= zeros(1,3);       % Sum of the Bytes of all transmitted packets of each flow
+DELAYS= zeros(1,3);           % Sum of the delays of all transmitted packets of each flow
+MAXDELAY= zeros(1,3);         % Maximum delay among all transmitted packets of each flow
+    \end{lstlisting}
+
+    \item \textbf{Chegada inicial do fluxo~3.} Foi acrescentado um terceiro
+    evento de chegada inicial,
+    \lstinline|tmp = Clock + exprnd(1/lambda(3))|, seguindo exatamente o
+    padrão das duas primeiras. Cada fluxo só existe no simulador se tiver uma
+    primeira chegada agendada; sem esta linha o fluxo~3 nunca geraria tráfego,
+    porque todas as chegadas seguintes são geradas a partir de uma chegada
+    anterior do mesmo fluxo.
+
+    \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+tmp= Clock + exprnd(1/lambda(2));
+EventList = [EventList; ARRIVAL, tmp, GenerateSize2(), 2, tmp];
+% adicionar o terceiro fluxo
+tmp = Clock + exprnd(1/lambda(3));
+EventList = [EventList; ARRIVAL, tmp, GenerateSize3(), 3, tmp];
+    \end{lstlisting}
+
+    \item \textbf{Selecção do gerador do próximo pacote.} No simulador base a
+    escolha era feita com \lstinline|if Flow==1 ... else ...|, o que atribuiria
+    ao fluxo~2 o gerador do fluxo~3 (e vice-versa). Foi substituída por um
+    \lstinline|switch Flow| com um \lstinline|case| por fluxo, garantindo que
+    cada fluxo usa sempre a sua distribuição de tamanhos.
+
+    \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+            % agora temos um caso para cada fluxo
+            switch Flow
+                case 1
+                    nextPacketSize= GenerateSize1();
+                case 2
+                    nextPacketSize= GenerateSize2();
+                case 3
+                    nextPacketSize= GenerateSize3();
+            end
+    \end{lstlisting}
+
+    \item \textbf{Distribuições dos tamanhos dos pacotes.} Os geradores do
+    Guião 2 não correspondem ao enunciado: o fluxo~1 usava a distribuição
+    discreta do Guião 1 (64, 110 e 1518~B com probabilidades 0,19, 0,23 e
+    0,17, e os restantes valores uniformes entre 65 e 1517~B) e o fluxo~2
+    usava 110--130~B. Como o enunciado especifica uma distribuição uniforme
+    (valores inteiros com igual probabilidade) em 100--1500~B, 100--150~B e
+    500--1000~B, os três geradores passaram a \lstinline|randi([a b])|, que
+    devolve um inteiro uniforme no intervalo fechado indicado, e foi criado o
+    \lstinline|GenerateSize3|.
+
+    \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+function out= GenerateSize1()
+    out= randi([100 1500]);   % Flow 1: uniforme entre 100 e 1500 bytes
+end
+function out= GenerateSize2()
+    out= randi([100 150]);    % Flow 2: uniforme entre 100 e 150 bytes
+end
+function out= GenerateSize3()
+    out= randi([500 1000]);   % Flow 3: uniforme entre 500 e 1000 bytes
+end
+    \end{lstlisting}
+
+    \item \textbf{Resto do simulador inalterado.} A lista de eventos mantém as
+    cinco colunas (tipo, instante, tamanho, fluxo e instante de chegada), a
+    fila continua a ser uma única fila FIFO contabilizada em bytes, o teste de
+    admissão continua a ser
+    \lstinline|QUEUEOCCUPATION + PacketSize <= f| e as fórmulas de
+    \texttt{PL}, \texttt{APD}, \texttt{MPD} e \texttt{TT} não mudaram -- apenas
+    passaram a operar sobre vetores de três posições. O identificador do fluxo
+    já era guardado na fila e nos eventos, pelo que atribuir as estatísticas ao
+    fluxo correto não exigiu qualquer alteração estrutural.
+\end{itemize}
+
+O critério de paragem continua a ser \lstinline|sum(TRANSPACKETS)<P|, isto é,
+$P$ pacotes transmitidos no total dos três fluxos. Por consequência, o número
+de pacotes simulados por fluxo é proporcional à respectiva taxa de chegada.
+
+\newpage
+
+\section{Tarefa 1.b -- Resultados de simulação para o caso C}
+
+Para o caso C ($\lambda_1=\lambda_2=800$ pps, $\lambda_3=600$ pps), com
+$f=1\,000\,000$~B e $P=10^5$, obtiveram-se os resultados da
+Tabela~\ref{tab:1b}.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Resultados de simulação para o caso C (50 réplicas, IC de 90\%).}
+    \label{tab:1b}
+    \begin{tabular}{lccc}
+        \toprule
+        Parâmetro & Fluxo 1 & Fluxo 2 & Fluxo 3 \\
+        \midrule
+        PL (\%)   & $0 \pm 0$                & $0 \pm 0$                & $0 \pm 0$ \\
+        APD (ms)  & $7.33167 \pm 0.161631$   & $6.79454 \pm 0.159963$   & $7.29599 \pm 0.162140$ \\
+        MPD (ms)  & $44.9424 \pm 2.20024$    & $44.5527 \pm 2.21851$    & $44.7092 \pm 2.19380$ \\
+        TT (Mbps) & $5.11605 \pm 0.005824$   & $0.799148 \pm 0.001032$  & $3.59820 \pm 0.004634$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection*{Análise dos resultados}
+
+\begin{itemize}
+    \item \textbf{Não há perdas.} Com $E[L]=800$, $125$ e $750$~B, a carga
+    oferecida é de $5.12+0.80+3.60=9.52$~Mbps, ou seja
+    $\rho=0.952$: a ligação está muito carregada, mas é estável. O maior atraso
+    observado ($\approx 45$~ms) corresponde apenas a
+    $45\times10^{-3}\times1.25\times10^{6}\approx 56$~kB de trabalho
+    transmitido, uma ordem de grandeza inferior à capacidade da fila de
+    1~MB. Esta comparação é apenas indicativa, pois o atraso máximo não
+    determina diretamente a ocupação instantânea da fila. A ausência de
+    perdas é confirmada diretamente pelos valores de PL, que foram nulos nas
+    50 réplicas; o valor $0\pm0$ não resulta de falta de precisão da
+    estimativa.
+
+    \item \textbf{O atraso médio é dominado pela espera comum na fila.} Como a
+    fila é FIFO e única, todos os pacotes sofrem a mesma espera média; o que
+    distingue os fluxos é o tempo de transmissão do próprio pacote,
+    $E[S_i]=0.64$, $0.10$ e $0.60$~ms. Ao subtrair estes valores aos atrasos
+    simulados obtém-se $6.69$, $6.69$ e $6.70$~ms para os três fluxos, o que
+    confirma esta interpretação. O fluxo~2 é o que apresenta menor atraso por
+    ter os pacotes mais pequenos (100--150~B).
+
+    \item \textbf{Os atrasos máximos são praticamente iguais.} A diferença entre
+    os três fluxos (44.55 a 44.94~ms) é muito inferior à semi-amplitude dos IC
+    ($\pm2.2$~ms), logo não é estatisticamente significativa. O máximo é
+    determinado pela pior excursão de fila de cada réplica, situação que é
+    comum a todos os fluxos por partilharem a mesma fila.
+
+    \item \textbf{O throughput é proporcional a $\lambda_i E[L_i]$.} Não havendo
+    perdas, $TT_i=\lambda_i E[L_i]\times8$, o que dá 5.12, 0.80 e 3.60~Mbps: o
+    fluxo~1 transporta mais bits por segundo não por ter mais pacotes (tem os
+    mesmos 800 pps do fluxo~2), mas por ter pacotes em média seis vezes
+    maiores. A soma dos valores de throughput (9.513~Mbps) coincide com a carga oferecida, e
+    o IC é muito estreito porque se trata de uma média de bytes ao longo de
+    vários segundos de simulação.
+\end{itemize}
+
+Em suma, em FIFO, os três fluxos são tratados da mesma forma: o
+único fator que os distingue é o tamanho médio dos seus pacotes.
+
+\newpage
+
+\section{Tarefa 1.c -- Modelo M/G/1 para o caso C}
+
+Os três fluxos são multiplexados estatisticamente na mesma ligação, pelo que o
+sistema é modelado como uma única fila M/G/1 cujo tempo de serviço é uma
+mistura das distribuições dos três fluxos, ponderada pelas taxas de chegada
+(Listagem~\ref{lst:1c}).
+
+\begin{lstlisting}[caption={Determinação dos valores teóricos do caso C (M/G/1).},
+                   label={lst:1c},
+                   basicstyle=\ttfamily\scriptsize]
+lambda = [800 800 600];        % packet arrival rates (packets/s)
+C = 10e6;                      % link capacity (bit/s)
+
+packetSizes = {100:1500; 100:150; 500:1000};   % uniform discrete sizes (Bytes)
+
+nFlows = numel(lambda);
+lambdaTotal = sum(lambda);
+
+% Mean packet size, mean and second moment of the service time of each flow
+for flow = 1:nFlows
+    sizes = packetSizes{flow};
+    serviceTimes = 8 * sizes / C;              % bytes -> bits, C in bit/s
+    meanPacketSize(flow) = mean(sizes);
+    meanServiceTime(flow) = mean(serviceTimes);
+    secondServiceMoment(flow) = mean(serviceTimes.^2);
+end
+
+% Service distribution of the aggregate flow (weighted by lambda)
+meanAggregateServiceTime = sum(lambda .* meanServiceTime) / lambdaTotal;
+secondAggregateServiceMoment = sum(lambda .* secondServiceMoment) / lambdaTotal;
+
+rho = lambdaTotal * meanAggregateServiceTime;  % traffic intensity
+if rho >= 1
+    error('The M/G/1 system is unstable: rho must be less than 1.');
+end
+
+% Pollaczek-Khinchine mean waiting time (common to all flows, FIFO)
+averageQueueingDelay = lambdaTotal * secondAggregateServiceMoment / ...
+    (2 * (1 - rho));
+
+% Per-flow results: queueing delay + own mean transmission time
+averagePacketDelayMs = 1000 * (averageQueueingDelay + meanServiceTime);
+throughputMbps = lambda .* meanPacketSize * 8 / 1e6;
+\end{lstlisting}
+
+\subsection*{Explicação do código}
+
+\begin{itemize}
+    \item \textbf{Momentos do serviço agregado.} Uma chegada pertence ao fluxo
+    $i$ com probabilidade $\lambda_i/\Lambda$, com $\Lambda=\sum_i\lambda_i$,
+    pelo que
+    $E[S]=\sum_i\lambda_i E[S_i]/\Lambda$ e
+    $E[S^2]=\sum_i\lambda_i E[S_i^2]/\Lambda$. Os momentos de cada fluxo são
+    calculados a partir de todos os valores possíveis do tamanho do pacote
+    (distribuição uniforme discreta), e não apenas a partir da média, porque a
+    variância do serviço entra na fórmula do tempo de espera. Obtém-se
+    $E[S]=0.4327$~ms, $E[S^2]=2.9253\times10^{-7}$~s$^2$ e $\rho=0.952$,
+    coerente com a carga oferecida de 9.52~Mbps.
+
+    \item \textbf{Fórmula de Pollaczek--Khinchine.} Para M/G/1,
+    $W_q=\Lambda E[S^2]/\left[2(1-\rho)\right]=6.704$~ms. Esta espera é comum
+    aos três fluxos, porque a fila é única e FIFO; só depende da carga global.
+
+    \item \textbf{Atraso e throughput por fluxo.} O atraso médio de cada fluxo é
+    $W_q+E[S_i]$, somando ao tempo de espera o tempo de transmissão do próprio
+    pacote, que depende do tamanho médio do fluxo. O throughput é
+    $TT_i=\lambda_iE[L_i]\times8$, uma vez que o modelo admite fila infinita e,
+    portanto, ausência de perdas.
+\end{itemize}
+
+\subsection*{Resultados e comparação com a simulação}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Valores teóricos (M/G/1) e simulados para o caso C.}
+    \label{tab:1c}
+    \begin{tabular}{cccccc}
+        \toprule
+        Fluxo & $E[L]$ (B) & TT teórico (Mbps) & TT simulado (Mbps) & APD teórico (ms) & APD simulado (ms) \\
+        \midrule
+        1 & 800 & 5.1200 & $5.1161 \pm 0.0058$ & 7.3438 & $7.3317 \pm 0.1616$ \\
+        2 & 125 & 0.8000 & $0.7991 \pm 0.0010$ & 6.8038 & $6.7945 \pm 0.1600$ \\
+        3 & 750 & 3.6000 & $3.5982 \pm 0.0046$ & 7.3038 & $7.2960 \pm 0.1621$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Erro relativo do modelo face à simulação.}
+    \label{tab:1c-err}
+    \begin{tabular}{lccc}
+        \toprule
+        & Fluxo 1 & Fluxo 2 & Fluxo 3 \\
+        \midrule
+        Erro relativo do APD & 0.17\% & 0.14\% & 0.11\% \\
+        Erro relativo do TT  & 0.08\% & 0.11\% & 0.05\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection*{Conclusões}
+
+\begin{itemize}
+    \item O modelo M/G/1 reproduz a simulação com erros relativos inferiores a
+    0.2\%, bastante abaixo da semi-amplitude dos IC de 90\% ($\pm0.16$~ms em
+    atraso e $\pm0.006$~Mbps em throughput). Ou seja, as diferenças observadas não
+    são distinguíveis da variabilidade estatística da simulação, o que valida
+    quer o simulador quer o modelo.
+    \item A estrutura dos resultados é explicada pelo modelo: a espera em fila
+    é a mesma para os três fluxos e é a parcela dominante (6.70~ms), enquanto a
+    diferença entre fluxos vem apenas do tempo de transmissão médio. Isto
+    confirma que, em FIFO, os fluxos não se prejudicam entre si de forma
+    seletiva -- todos são penalizados pela carga global.
+    \item As pequenas diferenças residuais resultam de a simulação ter um
+    horizonte finito ($P=10^5$ pacotes, cerca de 45~s) e de o modelo descrever
+    o regime estacionário.
+    \item O modelo tem limites que importam para as tarefas seguintes: admite
+    fila infinita (não prevê perdas nem o efeito de $f$) e só fornece valores
+    médios, pelo que não permite estimar o atraso máximo (MPD). Neste caso,
+    como não houve perdas, a hipótese de fila infinita não introduz erro.
+\end{itemize}
+
+\newpage
+
+\section{Tarefa 1.d -- Atraso médio e máximo do fluxo 3 (casos A, B e C)}
+
+O script executa \texttt{Sim3FlowsT} 50 vezes para cada um dos casos A, B e C,
+com $f=1\,000\,000$~B e $P=10^5$, e apresenta as estimativas do atraso médio e
+do atraso máximo do fluxo~3 em gráficos de barras com as barras de erro dos IC
+de 90\% (Figuras~\ref{fig:1d-apd} e~\ref{fig:1d-mpd}).
+
+\begin{figure}[htbp]
+    \centering
+    \IfFileExists{Imagens/Figure_1.png}%
+      {\includegraphics[width=0.75\linewidth]{Imagens/Figure_1.png}}%
+      {\fbox{\parbox[c][3.5cm][c]{0.7\linewidth}{\centering\small
+        Atraso médio do fluxo~3 (adicionar o gráfico exportado do MATLAB em
+        \texttt{Imagens/Figure_1.png})}}}
+    \caption{Atraso médio do fluxo 3 nos casos A, B e C (estimativa e IC de 90\%).}
+    \label{fig:1d-apd}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \IfFileExists{Imagens/Figure_2.png}%
+      {\includegraphics[width=0.75\linewidth]{Imagens/Figure_2.png}}%
+      {\fbox{\parbox[c][3.5cm][c]{0.7\linewidth}{\centering\small
+        Atraso máximo do fluxo~3 (adicionar o gráfico exportado do MATLAB em
+        \texttt{Imagens/Figure_2.png})}}}
+    \caption{Atraso máximo do fluxo 3 nos casos A, B e C (estimativa e IC de 90\%).}
+    \label{fig:1d-mpd}
+\end{figure}
+
+\subsection*{Justificação dos resultados}
+
+Os três casos diferem apenas na carga: $\rho=0.656$ (A), $0.804$ (B) e
+$0.952$ (C). A utilização aparece no denominador $1-\rho$ da fórmula de
+Pollaczek--Khinchine, que toma os valores $0.344$, $0.196$ e $0.048$; o tempo
+de espera cresce, por isso, muito mais depressa do que a taxa de chegada.
+Usando o modelo da Tarefa~1.c, $W_q=0.63$, $1.37$ e $6.70$~ms para A, B e C,
+um fator de cerca de 10.6 entre o caso A e o caso C, embora a taxa de
+chegada total suba apenas de 1400 para 2200 pps (fator 1.57). Somando o tempo
+de transmissão médio do fluxo~3 ($0.60$~ms) obtêm-se atrasos médios teóricos
+de 1.23, 1.97 e 7.30~ms; o valor simulado para o caso C,
+$7.296\pm0.162$~ms, confirma este comportamento. A passagem de A para B é
+moderada, mas de B para C é abrupta: é a zona em que a ligação deixa de ter
+folga e a fila passa a acumular pacotes.
+
+O atraso máximo acompanha esta tendência, mas é uma estatística de extremo
+(máximo de $10^5$ pacotes por réplica) e por isso muito mais dispersa, como
+mostram as barras de erro -- no caso C o IC é de $\pm2.19$~ms, cerca de 5\% do
+valor estimado, contra cerca de 2\% no atraso médio. Um único período de
+ocupação invulgarmente longo numa réplica altera o máximo, o que explica a
+maior variabilidade e o facto de o erro crescer com a carga.
+
+\subsection*{Conclusões}
+
+\begin{itemize}
+    \item O atraso do fluxo~3 cresce de forma claramente não linear com a carga
+    porque a espera em fila é proporcional a $1/(1-\rho)$; pequenos aumentos de
+    tráfego na vizinhança da saturação produzem grandes degradações.
+    \item O atraso médio é uma métrica robusta (IC estreitos) e útil para
+    comparar cenários, enquanto o atraso máximo, sendo um extremo, exige
+    bastantes réplicas para ser estimado com precisão aceitável.
+    \item Os casos A, B e C não apresentam perdas: o caso C, o mais carregado,
+    já não perde pacotes, pelo que os casos com menor carga também não os
+    perdem, e a fila de 1~MB nunca é limitativa nos três cenários.
+\end{itemize}
+
+\newpage
+
+
+
+\section{Tarefa 2.a -- Simulador para três fluxos com prioridades}
+
+Na Tarefa~2 foi desenvolvida a função \texttt{Sim3FlowsPrioT}, a partir do
+simulador \texttt{Sim2FlowsPrio} utilizado no Guião~2. A nova versão passou
+a trabalhar com três fluxos e duas filas: a fila~1 é partilhada pelos
+fluxos~1 e~2, que têm a mesma prioridade, e a fila~2 contém apenas os pacotes
+do fluxo~3. Assim, a extensão não corresponde a duas cópias independentes do
+modelo original, mas à junção das duas filas de menor prioridade num único
+buffer partilhado:
+
+\begin{itemize}
+    \item o fluxo~3 tem a prioridade mais elevada;
+    \item os pacotes dos fluxos~1 e~2 ficam na fila~1;
+    \item os pacotes do fluxo~3 ficam na fila~2;
+    \item a fila~2 é escolhida antes da fila~1 quando \texttt{prio == 1};
+    \item dentro da fila dos fluxos~1 e~2, os pacotes são escolhidos pela
+    ordem de chegada;
+    \item um pacote que já começou a ser transmitido termina antes de se
+    escolher outro pacote.
+\end{itemize}
+
+O identificador do fluxo continua guardado em cada entrada da fila, o que
+permite transmitir pela ordem FIFO e calcular separadamente as perdas, os
+atrasos e os \textit{throughputs} dos três fluxos.
+
+\subsection*{Alterações introduzidas}
+
+Relativamente à \texttt{Sim2FlowsPrio}, os contadores estatísticos, os
+contadores de chegadas e partidas e a inicialização do evento de chegada do
+terceiro fluxo foram adaptados tal como descrito na Tarefa~1 para o acréscimo
+de um fluxo.
+
+A diferença específica desta versão é que os fluxos~1 e~2 passam a partilhar
+a fila~1, enquanto o fluxo~3 utiliza a fila~2. Por isso, à chegada de um
+pacote é atribuído o índice da fila \texttt{Q}, em vez de usar diretamente o
+índice \texttt{Flow}:
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize,
+                   caption={Encaminhamento dos três fluxos pelas duas filas.},
+                   label={lst:2a-routing}]
+if Flow == 1 || Flow == 2
+    Q = 1;
+else
+    Q = 2;
+end
+
+if QUEUEOCCUPATION(Q) + PacketSize <= f(Q)
+    QUEUE{Q} = [QUEUE{Q}; PacketSize, Clock, Flow];
+    QUEUEOCCUPATION(Q) = QUEUEOCCUPATION(Q) + PacketSize;
+else
+    LOSTPACKETS(Flow) = LOSTPACKETS(Flow) + 1;
+end
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize,
+                   caption={Seleção da fila no instante da partida.},
+                   label={lst:2a-departure}]
+
+QFlow = 0;
+if prio == 1
+    if QUEUEOCCUPATION(2) > 0
+        QFlow = 2;
+    elseif QUEUEOCCUPATION(1) > 0
+        QFlow = 1;
+    else
+        STATE = 0;
+    end
+else
+    if QUEUEOCCUPATION(1) > 0
+        QFlow = 1;
+    elseif QUEUEOCCUPATION(2) > 0
+        QFlow = 2;
+    else
+        STATE = 0;
+    end
+end
+
+if QFlow > 0
+    QSize = QUEUE{QFlow}(1,1);
+    QInstant = QUEUE{QFlow}(1,2);
+    PacketFlow = QUEUE{QFlow}(1,3);
+    EventList = [EventList; DEPARTURE, ...
+        Clock + 8*QSize/(C*1e6), QSize, PacketFlow, QInstant];
+    QUEUEOCCUPATION(QFlow) = QUEUEOCCUPATION(QFlow) - QSize;
+    QUEUE{QFlow}(1,:) = [];
+end
+\end{lstlisting}
+
+O campo \texttt{PacketFlow} é necessário
+porque a fila~1 contém pacotes dos dois fluxos, ou seja, ao contrário de em \texttt{Sim2FlowsPrio} o Id do fluxo e o Id da queue não correspondem. A entrada mais antiga
+da fila, indicada pelo índice~1, continua a ser retirada primeiro. Esta
+sequência implementa FIFO dentro da fila partilhada.
+
+O valor \texttt{prio = 1} indica que o fluxo~3 deve ter prioridade máxima.
+Esta foi a configuração usada nas experiências seguintes.
+
+\newpage
+
+\section{Tarefa 2.b -- Resultados de simulação para o caso C}
+
+Foram consideradas as taxas do caso~C,
+$\lambda=[800,800,600]$~pps, a capacidade $C=10$~Mbps e o critério de
+paragem $P=10^5$. O enunciado especifica
+$f_1=f_2=1\,000\,000$~B. Portanto, foi usada a configuração
+$f=[1\,000\,000,1\,000\,000]$~B.
+
+Foram feitas 50 simulações e foram calculados intervalos de confiança de 90\%
+para a percentagem de perdas (PL), o atraso médio (APD), o atraso máximo (MPD)
+e o throughput transmitido (TT).
+
+\begin{table}[htbp]
+    \centering
+    \caption{Resultados de simulação para a Tarefa 2.b (50 réplicas, IC de 90\%).}
+    \label{tab:2b}
+    \begin{tabular}{lccc}
+        \toprule
+        Parâmetro & Fluxo 1 & Fluxo 2 & Fluxo 3 \\
+        \midrule
+        PL (\%)   & $0 \pm 0$ & $0 \pm 0$ & $0 \pm 0$ \\
+        APD (ms)  & $10.9033 \pm 0.22786$ &
+                     $10.3582 \pm 0.220268$ &
+                     $1.10208 \pm 0.001228$ \\
+        MPD (ms)  & $72.053 \pm 3.27981$ &
+                     $71.8143 \pm 3.30082$ &
+                     $4.58627 \pm 0.097721$ \\
+        TT (Mbps) & $5.1154 \pm 0.006348$ &
+                     $0.79995 \pm 0.000898$ &
+                     $3.59802 \pm 0.005655$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection*{Análise dos resultados}
+
+Não houve perdas em nenhum dos três fluxos. Isto mostra que, neste cenário, as
+filas não chegaram a atingir o limite definido.
+
+O efeito da prioridade nota-se principalmente no atraso do fluxo~3. O seu APD é
+$1.10208$~ms, enquanto os fluxos~1 e~2 apresentam $10.9033$~ms e
+$10.3582$~ms, respetivamente. Quando chega um pacote do fluxo~3, ele passa à
+frente dos pacotes dos fluxos~1 e~2 que ainda estão na fila. Por isso, o
+fluxo~3 espera sobretudo pelo pacote que já estava a ser transmitido.
+
+Na Tarefa~1.b todos os fluxos eram atendidos pela ordem de chegada e o APD do
+fluxo~3 era aproximadamente $7.296$~ms. Com prioridades, esse valor desceu
+para $1.102$~ms. Em contrapartida, os fluxos~1 e~2 passaram a esperar mais,
+com APD de cerca de $10.9$~ms e $10.4$~ms. A prioridade melhora um fluxo, mas
+faz aumentar o tempo de espera dos outros.
+
+Os valores de TT permanecem praticamente iguais aos da Tarefa~1.b:
+aproximadamente $5.12$, $0.80$ e $3.60$~Mbps. Isto é esperado, porque não
+existem perdas e a prioridade apenas altera a ordem de transmissão.
+
+O mesmo acontece com o MPD: o valor do fluxo~3 desce para cerca de $4.59$~ms,
+enquanto os valores dos fluxos~1 e~2 ficam próximos de $72$~ms.
+
+\newpage
+
+\section{Tarefa 2.c -- Modelo M/G/1 com prioridades}
+
+Para comparar os resultados da simulação com um modelo teórico, foi usado um
+modelo M/G/1 com prioridades. Para cada fluxo calculou-se o tempo médio de
+serviço $E[S_i]$, o segundo momento $E[S_i^2]$ e a utilização
+$\rho_i=\lambda_iE[S_i]$.
+
+Primeiro calcula-se o tempo de espera residual:
+\[
+W_0=\frac{1}{2}\sum_i\lambda_iE[S_i^2],
+\]
+Para o fluxo de maior prioridade, o tempo médio de espera é
+\[
+W_{Q,\mathrm{alta}}=\frac{W_0}{1-\rho_{\mathrm{alta}}},
+\]
+e para os fluxos de menor prioridade é
+\[
+W_{Q,\mathrm{baixa}}=
+\frac{W_0}{(1-\rho_{\mathrm{alta}})(1-\rho_{\mathrm{total}})}.
+\]
+
+Neste caso, o fluxo 3 é o fluxo de maior prioridade e os fluxos~1 e~2 têm
+menor prioridade. O atraso total de cada fluxo é a soma do tempo de espera com
+o seu tempo médio de transmissão:
+$D_i=W_{Q,i}+E[S_i]$.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+rho = y .* meanService;
+totalRho = sum(rho);
+
+rhoHigh = rho(3);
+W0 = 0.5 * sum(y .* secondMomentService);
+
+queueingDelayHigh = W0 / (1 - rhoHigh);
+queueingDelayLow = ...
+    W0 / ((1 - rhoHigh) * (1 - totalRho));
+
+averagePacketDelayMs = 1000 * ...
+    [queueingDelayLow + meanService(1), ...
+     queueingDelayLow + meanService(2), ...
+     queueingDelayHigh + meanService(3)];
+\end{lstlisting}
+
+Os resultados teóricos foram:
+
+\begin{table}[htbp]
+    \centering
+    \caption{Resultados teóricos do modelo M/G/1 com prioridades.}
+    \label{tab:2c-theory}
+    \begin{tabular}{lcc}
+        \toprule
+        Fluxo & APD teórico (ms) & TT teórico (Mbps) \\
+        \midrule
+        1 & 11.114757 & 5.120000 \\
+        2 & 10.574757 & 0.800000 \\
+        3 & 1.102788  & 3.600000 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection*{Comparação com a simulação}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Comparação entre o modelo teórico e a simulação da Tarefa 2.b.}
+    \label{tab:2c-comparison}
+    \begin{tabular}{lccc}
+        \toprule
+        Fluxo & APD teórico (ms) & APD simulado (ms) & Erro relativo \\
+        \midrule
+        1 & 11.114757 & $10.9033 \pm 0.22786$ & 1.94\% \\
+        2 & 10.574757 & $10.3582 \pm 0.220268$ & 2.09\% \\
+        3 & 1.102788  & $1.10208 \pm 0.001228$ & 0.06\% \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Os valores teóricos e simulados são próximos. A maior diferença aparece nos
+fluxos~1 e~2, porque o seu atraso depende tanto da chegada de pacotes do
+fluxo~3 como da chegada dos pacotes do outro fluxo de menor prioridade. No
+fluxo~3, os dois valores são praticamente iguais. As pequenas diferenças
+resultam da aleatoriedade das simulações.
+
+\section{Tarefa 2.d -- Atraso do fluxo 3 nos casos A, B e C}
+
+Tal como na Tarefa~1.d, foram simulados os casos A, B e C, com 50 réplicas,
+$P=10^5$ e $f_1=f_2=1$~MB. Nesta tarefa, o fluxo~3 tem prioridade máxima.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Atraso do fluxo 3 com prioridade (50 réplicas, IC de 90\%).}
+    \label{tab:2d}
+    \begin{tabular}{lcc}
+        \toprule
+        Caso & APD (ms) & MPD (ms) \\
+        \midrule
+        A & $0.938691 \pm 0.001047$ & $4.625990 \pm 0.115557$ \\
+        B & $1.022540 \pm 0.001097$ & $4.529310 \pm 0.107777$ \\
+        C & $1.103810 \pm 0.001472$ & $4.451330 \pm 0.099898$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+
+\newpage
+
+\begin{figure}[htbp]
+    \centering
+    \IfFileExists{Imagens/APD2.png}%
+      {\includegraphics[width=0.75\linewidth]{Imagens/APD2.png}}%
+      {\fbox{\parbox[c][3.5cm][c]{0.7\linewidth}{\centering\small
+        Atraso médio do fluxo~3 com prioridade (adicionar
+        \texttt{Imagens/APD2.png})}}}
+    \caption{Atraso médio do fluxo 3 com prioridade nos casos A, B e C.}
+    \label{fig:2d-apd}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \IfFileExists{Imagens/MPD2.png}%
+      {\includegraphics[width=0.75\linewidth]{Imagens/MPD2.png}}%
+      {\fbox{\parbox[c][3.5cm][c]{0.7\linewidth}{\centering\small
+        Atraso máximo do fluxo~3 com prioridade (adicionar
+        \texttt{Imagens/MPD2.png})}}}
+    \caption{Atraso máximo do fluxo 3 com prioridade nos casos A, B e C.}
+    \label{fig:2d-mpd}
+\end{figure}
+
+\subsection*{Justificação e comparação com a Tarefa 1.d}
+
+O APD do fluxo~3 aumenta com a carga, de $0.939$~ms no caso~A para
+$1.104$~ms no caso~C. Mesmo assim, este valor continua muito abaixo do
+resultado da Tarefa~1.d, em que o APD no caso~C era aproximadamente
+$7.296$~ms.
+
+Isto acontece porque, sem prioridades, o fluxo~3 tinha de esperar por todos os
+pacotes que estavam à sua frente. Com a nova regra, depois de acabar o pacote
+que está a ser transmitido, o próximo pacote do fluxo~3 é escolhido antes dos
+pacotes dos fluxos~1 e~2.
+
+Os valores de MPD ficam perto de $4.5$~ms nos três casos. Na Tarefa~1.d, o MPD
+do fluxo~3 chegava a aproximadamente $44.7$~ms no caso~C. Portanto, a
+prioridade também reduz bastante os piores atrasos do fluxo~3.
+
+\subsection*{Conclusões}
+
+\begin{itemize}
+    \item A prioridade reduz bastante o APD e o MPD do fluxo~3.
+    \item O efeito é mais importante no caso~C, que tem maior carga.
+    \item A redução do atraso do fluxo~3 é conseguida aumentando o tempo de
+    espera dos fluxos~1 e~2.
+\end{itemize}
+
+
+\newpage
+
+\section{Tarefa 3.a -- Simulador Deficit Round Robin para três fluxos}
+
+Na Tarefa~3 foi desenvolvida a função \texttt{Sim3FlowsDrrT}, a partir do
+simulador DRR com dois fluxos do Guião~2. A versão desenvolvida mantém uma fila
+por fluxo e uma fila final DRR comum aos três fluxos.
+
+\subsection*{Alterações introduzidas}
+
+A adaptação dos contadores, da inicialização dos eventos e da geração dos
+tamanhos dos pacotes segue o mesmo procedimento descrito na Tarefa~1 para a
+introdução do terceiro fluxo. A alteração própria da Tarefa~3 está na função
+\texttt{enterDRR}: a
+ordem percorrida pela ronda passa a incluir o fluxo~3.
+
+Tal como em Sim2FlowsDrr, em cada ronda, o algoritmo adiciona o quantum ao crédito do fluxo considerado
+e move para a fila final tantos pacotes consecutivos quanto os que cabem no
+crédito atual. O pacote que já estiver a ser transmitido não é interrompido.
+Não houve necessidade de muitas alterações, uma vez que o código suporta
+facilmente a adição de novas filas.
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+if inv
+    flowOrder = [3 2 1];
+else
+    flowOrder = [1 2 3];
+end
+
+for Flow = flowOrder
+    if QUEUEOCCUPATION(Flow) == 0
+        credit(Flow) = 0;
+    else
+        credit(Flow) = credit(Flow) + quantum(Flow);
+        while QUEUEOCCUPATION(Flow) > 0 && QUEUE{Flow}(1,1) <= credit(Flow)
+            PacketSize = QUEUE{Flow}(1,1);
+            FINALQUEUE = [FINALQUEUE; QUEUE{Flow}(1,:)];
+            QUEUE{Flow}(1,:) = [];
+            QUEUEOCCUPATION(Flow) = QUEUEOCCUPATION(Flow) - PacketSize;
+            credit(Flow) = credit(Flow) - PacketSize;
+        end
+    end
+end
+\end{lstlisting}
+\newpage
+\section{Tarefa 3.b -- DRR no caso C}
+
+No caso~C consideraram-se
+$\lambda=[800,800,600]$~pps, $C=10$~Mbps,
+$f_1=f_2=f_3=1\,000\,000$~B e quantum igual a $1500$~B para cada fluxo.
+Cada experiência foi executada 50 vezes, com $P=10^5$ e IC de 90\%.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Resultados DRR no caso C com quantum igual a 1500~B por fluxo.}
+    \label{tab:3b}
+    \begin{tabular}{lccc}
+        \toprule
+        Parâmetro & Fluxo 1 & Fluxo 2 & Fluxo 3 \\
+        \midrule
+        PL (\%) & $0 \pm 0$ & $0 \pm 0$ & $0 \pm 0$ \\
+        APD (ms) & $10.0605 \pm 0.26231$ &
+                   $2.09316 \pm 0.007437$ &
+                   $4.02993 \pm 0.028119$ \\
+        MPD (ms) & $71.4056 \pm 3.47416$ &
+                   $6.81310 \pm 0.13718$ &
+                   $24.2956 \pm 0.707198$ \\
+        TT (Mbps) & $5.11136 \pm 0.006667$ &
+                    $0.799958 \pm 0.000967$ &
+                    $3.60206 \pm 0.004944$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Não se verificaram perdas no caso~C. O fluxo~2 apresenta o menor atraso médio,
+pois os seus pacotes têm apenas 100--150~B. O fluxo~3 apresenta um atraso
+intermédio e o fluxo~1 o maior atraso, consequência não apenas do
+DRR, mas também da maior variação dos tamanhos dos seus pacotes, que podem
+atingir 1500~B.
+
+O throughput mantém-se próximo dos valores oferecidos pelos fluxos:
+$5.11$, $0.80$ e $3.60$~Mbps. O valor muito próximo da carga teórica também
+indica que a distribuição DRR não perde capacidade útil neste cenário.
+
+\section{Tarefa 3.c -- DRR no caso congestionado D}
+
+Mantiveram-se os 50 resultados por réplica, $P=10^5$ e filas de $1$~MB.
+No caso~D considerou-se
+$\lambda=[1000,1000,1000]$~pps e o quantum igual a $1500$~B para os três
+fluxos.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Resultados DRR no caso D com quantum igual a 1500~B por fluxo.}
+    \label{tab:3c}
+    \begin{tabular}{lccc}
+        \toprule
+        Parâmetro & Fluxo 1 & Fluxo 2 & Fluxo 3 \\
+        \midrule
+        PL (\%) & $21.2683 \pm 0.079907$ &
+                  $0 \pm 0$ &
+                  $20.8901 \pm 0.091994$ \\
+        APD (ms) & $1651.96 \pm 1.18139$ &
+                   $2.78703 \pm 0.001160$ &
+                   $1618.63 \pm 1.98380$ \\
+        MPD (ms) & $1790.80 \pm 0.580693$ &
+                   $5.50001 \pm 0.033551$ &
+                   $1792.41 \pm 0.578203$ \\
+        TT (Mbps) & $4.50011 \pm 0.000702$ &
+                    $0.999796 \pm 0.001337$ &
+                    $4.49990 \pm 0.000655$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Neste cenário, a carga oferecida excede a capacidade da ligação. Os fluxos~1
+e~3 sofrem perdas semelhantes, enquanto o fluxo~2 não perde pacotes. Isto
+acontece porque os pacotes do fluxo~2 são muito pequenos e cabem facilmente
+no seu quantum de 1500~B. Em consequência, o seu atraso é muito reduzido.
+
+Os fluxos~1 e~3 apresentam atrasos muito elevados, da ordem de 1600--1650~ms,
+devido à acumulação nas respetivas filas após se atingir o limite de
+transmissão. Os resultados do TT mostram que a ligação distribui aproximadamente
+4.5~Mbps ao fluxo~1, 1~Mbps ao fluxo~2 e 4.5~Mbps ao fluxo~3.
+
+\section{Tarefa 3.d -- DRR no caso D com quantum assimétrico}
+
+Mantiveram-se as condições do caso~D, mas o quantum foi alterado para
+$q=[1500,1500,4500]$~B. Assim, o fluxo~3 tem uma parcela três vezes superior
+à dos fluxos~1 e~2 por ronda.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Resultados DRR no caso D com valores de quantum de 1500, 1500 e 4500~B.}
+    \label{tab:3d}
+    \begin{tabular}{lccc}
+        \toprule
+        Parâmetro & Fluxo 1 & Fluxo 2 & Fluxo 3 \\
+        \midrule
+        PL (\%) & $42.4007 \pm 0.117800$ &
+                  $0 \pm 0$ &
+                  $0 \pm 0$ \\
+        APD (ms) & $2520.09 \pm 6.28820$ &
+                   $3.87587 \pm 0.006908$ &
+                   $6.36000 \pm 0.028581$ \\
+        MPD (ms) & $2942.72 \pm 14.8186$ &
+                   $14.5760 \pm 0.257080$ &
+                   $27.5605 \pm 0.901622$ \\
+        TT (Mbps) & $2.99691 \pm 0.007330$ &
+                    $0.999819 \pm 0.001069$ &
+                    $6.00290 \pm 0.007219$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+O aumento do quantum do fluxo~3 reduz o seu atraso e elimina as perdas deste
+fluxo. O TT passa a ser aproximadamente 6~Mbps no fluxo~3, enquanto o fluxo~2
+continua a transmitir cerca de 1~Mbps. O throughput restante atribuído ao
+fluxo~1 é aproximadamente 3~Mbps.
+
+Esta alteração prejudica claramente o fluxo~1: a percentagem de perdas aumenta
+de aproximadamente 21.27\% na Tarefa~3.c para 42.40\% na Tarefa~3.d, e o APD
+aumenta de cerca de 1652~ms para 2520~ms. Portanto, o peso adicional do
+fluxo~3 é atribuído às custas da parcela efetiva disponível ao fluxo~1.
+
+\section{Tarefa 3.e -- Throughput ideal por weighted max-min fairness}
+
+Os valores máximos de throughput oferecidos pelos três fluxos no caso~D são:
+
+\[
+R_1=1000\times800\times\frac{8}{10^6}=6.4~\text{Mbps},
+\]
+\[
+R_2=1000\times125\times\frac{8}{10^6}=1.0~\text{Mbps},
+\]
+\[
+R_3=1000\times750\times\frac{8}{10^6}=6.0~\text{Mbps}.
+\]
+
+A soma dos valores máximos de throughput é $13.4$~Mbps, superior à capacidade de 10~Mbps,
+logo o sistema é congestionado.
+
+\subsection*{Valores de quantum iguais}
+
+Para valores de quantum iguais, os fluxos~1 e~3 têm igual peso e o fluxo~2 não requer
+mais de 1~Mbps. Como o seu máximo é 1~Mbps, recebe primeiro 1~Mbps. Os restantes
+9~Mbps são divididos igualmente pelos fluxos~1 e~3:
+
+\[
+T_{\text{ideal}}=[4.5,\,1.0,\,4.5]\ \text{Mbps}.
+\]
+
+Os resultados simulados são
+$[4.50011,\,0.999796,\,4.49990]$~Mbps, praticamente iguais aos ideais.
+
+\subsection*{Valores de quantum proporcionais a 1:1:3}
+
+Com valores de quantum $[1500,1500,4500]$, os pesos relativos são $[1,1,3]$. A
+distribuição ideal seria $[2,2,6]$~Mbps, mas o fluxo~2 tem máximo de 1~Mbps e
+o fluxo~3 tem máximo de 6~Mbps.
+
+Após atribuir a todos os fluxos a sua capacidade limitada:
+\[
+10-1-6=3~\text{Mbps},
+\]
+esta parcela restante é atribuída ao fluxo~1. Assim:
+
+\[
+T_{\text{ideal}}=[3.0,\,1.0,\,6.0]\ \text{Mbps}.
+\]
+
+Os resultados simulados são
+$[2.99691,\,0.999819,\,6.00290]$~Mbps, confirmando uma forte concordância com
+os valores teóricos.
+
+\subsection*{Conclusões da Tarefa 3}
+
+\begin{itemize}
+    \item No caso~C, o sistema não apresenta perdas e o DRR transmite
+    aproximadamente o mesmo throughput que em FIFO ou Priority Queuing.
+    \item No caso~D, com valores de quantum iguais, o sistema distribui aproximadamente
+    $[4.5,1,4.5]$~Mbps.
+    \item No caso~D com o quantum $4500$~B no fluxo~3, a divisão passa a ser
+    aproximadamente $[3,1,6]$~Mbps.
+    \item A alteração dos valores de quantum permite controlar a parcela de serviço dos
+    fluxos. O benefício do fluxo~3 é obtido sobretudo à custa do fluxo~1.
+    \item Os resultados simulados aproximam-se dos valores ideais de
+    weighted max-min fairness, com diferenças inferiores a 0.1\% nos três
+    fluxos apresentados.
+\end{itemize}
+
+\end{document}
+
+
